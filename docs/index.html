@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Glide: a quiet browser extension for back to top, dark mode and reading mode. 安静的浏览器扩展：回到顶部、夜间模式、阅读模式。">
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+  /* 独立页面的基础样式（claude.ai 发布时会自动加上这些） */
+  :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  body{margin:0}
+  img{max-width:100%}
+  [hidden]{display:none!important}
+</style>
+<title>Glide 浏览器扩展</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=JetBrains+Mono:wght@500&family=Noto+Serif+SC:wght@600;900&display=swap">
+<style>
+/* 版式：这一页本身就装着 Glide —— 左对齐的编辑式长页，右下角是真实可用的按钮胶囊 */
+:root{
+  --paper:#f2f3f5;        /* 冷调纸色，向强调蓝偏一点 */
+  --paper-2:#e8eaee;
+  --ink:#16181d;
+  --muted:#626875;
+  --line:rgba(22,24,29,.11);
+  --accent:#0a6fe0;
+  --amber:rgba(255,184,0,.22);
+  --night:#22242a;        /* Glide 默认夜间底色"石墨" */
+  --night-ink:#e3e5ea;
+  --glass:rgba(255,255,255,.74);
+  --glass-fg:#1d1d1f;
+  --glass-ring:rgba(0,0,0,.08);
+  --glass-shadow:rgba(20,24,40,.16);
+  --hover:rgba(0,0,0,.06);
+  --mock-bg:#ffffff;
+  --mock-ink:#24262b;
+  --mock-sub:#8b9099;
+  --display:"Noto Serif SC","Songti SC",STSong,"SimSun",Georgia,serif;
+  --body:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei UI","Segoe UI",sans-serif;
+  --mark:"Bricolage Grotesque",-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#15161a;--paper-2:#1c1e23;--ink:#e6e7ea;--muted:#9a9fa9;--line:rgba(255,255,255,.10);
+    --accent:#4ba3ff;--amber:rgba(255,184,0,.16);
+    --glass:rgba(44,45,50,.74);--glass-fg:#f2f3f5;--glass-ring:rgba(255,255,255,.10);--glass-shadow:rgba(0,0,0,.5);--hover:rgba(255,255,255,.09);
+    --mock-bg:#1f2126;--mock-ink:#e3e5ea;--mock-sub:#8d929c;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#15161a;--paper-2:#1c1e23;--ink:#e6e7ea;--muted:#9a9fa9;--line:rgba(255,255,255,.10);
+  --accent:#4ba3ff;--amber:rgba(255,184,0,.16);
+  --glass:rgba(44,45,50,.74);--glass-fg:#f2f3f5;--glass-ring:rgba(255,255,255,.10);--glass-shadow:rgba(0,0,0,.5);--hover:rgba(255,255,255,.09);
+  --mock-bg:#1f2126;--mock-ink:#e3e5ea;--mock-sub:#8d929c;
+  color-scheme:dark;
+}
+
+/* 语言：中英两份文字成对写在页面里，按根元素的 lang 只显示一份 */
+:root:not([lang="en"]) .en,:root[lang="en"] .zh{display:none!important}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{animation:none!important;transition-duration:.01s!important}}
+body{background:var(--paper);color:var(--ink);font:16px/1.75 var(--body);-webkit-font-smoothing:antialiased;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+:root[lang="en"] body{line-height:1.65}
+a{color:var(--accent)}
+.wrap{max-width:1080px;margin:0 auto}
+h1,h2,h3{text-wrap:balance;margin:0}
+p{margin:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+kbd{font:500 12.5px/1 var(--mono);padding:4px 7px;border-radius:6px;background:var(--paper-2);border:1px solid var(--line);
+  border-bottom-width:2px;white-space:nowrap}
+
+/* ---------- 顶栏 ---------- */
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:22px}
+.mark{display:flex;align-items:center;gap:10px;font:700 21px/1 var(--mark);letter-spacing:-.02em}
+.mark-icon{width:22px;height:22px;border-radius:50%;background:linear-gradient(90deg,var(--paper) 0 50%,var(--ink) 50% 100%);
+  box-shadow:inset 0 0 0 2px var(--ink)}
+.top-right{display:flex;align-items:center;gap:22px}
+.top nav{display:flex;gap:22px;font-size:14px}
+.top nav a{color:var(--muted);text-decoration:none}
+.top nav a:hover{color:var(--ink)}
+.lang{display:inline-flex;background:var(--paper-2);border-radius:999px;padding:3px}
+.lang button{border:0;background:transparent;color:var(--muted);font:600 12.5px/1 var(--body);padding:6px 11px;border-radius:999px;cursor:pointer;
+  transition:background .2s,color .2s}
+.lang button[aria-pressed="true"]{background:var(--paper);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+
+/* ---------- 首屏 ---------- */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:56px;align-items:center;padding-block:48px 88px}
+.hero h1{font:900 clamp(40px,6.4vw,78px)/1.12 var(--display);letter-spacing:-.01em}
+:root[lang="en"] .hero h1{font-size:clamp(38px,5.6vw,68px);line-height:1.08;letter-spacing:-.02em}
+.hero h1 .soft{color:var(--muted);font-weight:600}
+.lede{margin-top:26px;max-width:30em;font-size:17.5px;color:var(--muted)}
+.lede b{color:var(--ink);font-weight:600}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:999px;font:600 15px/1 var(--body);text-decoration:none;
+  border:0;cursor:pointer;transition:transform .2s var(--ease),background .2s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--ink);color:var(--paper)}
+.btn-ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.btn-ghost:hover{background:var(--hover)}
+.specs{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:28px;font:500 12.5px/1.4 var(--mono);color:var(--muted)}
+.try{margin-top:22px;font-size:14px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.try svg{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* 示意浏览器：浅色页面上，暗色从按钮处圆形展开 */
+.mock{position:relative;border-radius:14px;overflow:hidden;background:var(--mock-bg);
+  box-shadow:0 0 0 1px var(--line),0 30px 60px -30px var(--glass-shadow),0 12px 24px -16px var(--glass-shadow);aspect-ratio:16/11;max-width:100%}
+.mock-bar{height:38px;display:flex;align-items:center;gap:7px;padding:0 14px;background:var(--paper-2);border-bottom:1px solid var(--line)}
+.mock-bar i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.mock-url{margin-left:12px;flex:1;max-width:260px;height:22px;border-radius:6px;background:var(--mock-bg);font:500 11px/22px var(--mono);
+  color:var(--mock-sub);padding:0 10px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mock-view{position:absolute;inset:38px 0 0 0;overflow:hidden}
+.mock-page{position:absolute;inset:0;padding:26px 30px;background:#fbfbfa;color:#24262b}
+.mock-page.night{background:var(--night);color:var(--night-ink)}
+.mock-page h4{font:700 20px/1.35 var(--display);margin:0 0 6px}
+.mock-page .m-meta{font-size:11px;color:#9a9da4;margin-bottom:14px}
+.mock-page.night .m-meta{color:#8d929c}
+.mock-page p{font-size:13px;line-height:1.85;margin-bottom:10px}
+.mock-page .m-img{height:58px;border-radius:8px;background:linear-gradient(90deg,#f08a5d,#7b8cff);margin:2px 0 12px}
+.mock-page.night{clip-path:circle(0px at calc(100% - 38px) calc(100% - 92px));animation:reveal 7s var(--ease) 1.2s infinite}
+@keyframes reveal{
+  0%,8%{clip-path:circle(0px at calc(100% - 38px) calc(100% - 92px))}
+  22%,58%{clip-path:circle(150% at calc(100% - 38px) calc(100% - 92px))}
+  74%,100%{clip-path:circle(0px at calc(100% - 38px) calc(100% - 92px))}
+}
+@media (prefers-reduced-motion: reduce){.mock-page.night{clip-path:circle(46% at calc(100% - 38px) calc(100% - 92px))}}
+.mock-dock{position:absolute;right:20px;bottom:20px;display:flex;flex-direction:column;padding:3px;border-radius:999px;z-index:2;
+  background:rgba(255,255,255,.78);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#1d1d1f;
+  box-shadow:0 0 0 .5px rgba(0,0,0,.1),0 8px 20px -8px rgba(0,0,0,.3)}
+.mock-dock span{width:30px;height:30px;display:grid;place-items:center}
+.mock-dock span.hot{background:rgba(0,0,0,.07);border-radius:50%}
+.mock-dock svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- 通用分节 ---------- */
+section.band{padding-block:96px;border-top:1px solid var(--line)}
+.sec-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:56px;align-items:end;margin-bottom:56px}
+.sec-head h2{font:900 clamp(30px,4.2vw,48px)/1.2 var(--display)}
+:root[lang="en"] .sec-head h2{letter-spacing:-.015em;line-height:1.12}
+.sec-head p{color:var(--muted);max-width:34em}
+
+/* ---------- 四个按钮：每行一个按钮 + 说明，胶囊底衬在第一列后面 ---------- */
+.anatomy{display:grid;grid-template-columns:84px minmax(0,1fr);column-gap:44px;position:relative}
+.anatomy .pill{grid-column:1;grid-row:1 / span 4;border-radius:999px;background:var(--glass);margin-block:-8px;
+  box-shadow:0 0 0 .5px var(--glass-ring),0 24px 48px -20px var(--glass-shadow)}
+.anatomy .ico{grid-column:1;display:grid;place-items:center;color:var(--glass-fg);position:relative;min-height:88px}
+.anatomy .ico svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.anatomy .lab{grid-column:2;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:20px;padding-block:16px;
+  border-bottom:1px dashed var(--line)}
+.anatomy .lab.last{border-bottom:0}
+.anatomy .r1{grid-row:1}.anatomy .r2{grid-row:2}.anatomy .r3{grid-row:3}.anatomy .r4{grid-row:4}
+.lab h3{font:600 18px/1.3 var(--body)}
+.lab p{font-size:14px;color:var(--muted);margin-top:3px}
+.lab .keys{display:flex;gap:4px}
+
+/* ---------- 夜间模式 ---------- */
+.night-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:56px;align-items:start}
+.preview{border-radius:14px;padding:30px 32px;background:var(--night);color:var(--night-ink);transition:background .35s,filter .35s;min-height:300px;
+  box-shadow:0 0 0 1px var(--line)}
+.preview h4{font:700 22px/1.4 var(--display);margin:0 0 4px}
+.preview .pv-meta{font-size:12px;opacity:.55;margin-bottom:16px}
+.preview p{font-size:14.5px;line-height:1.85;margin-bottom:12px;opacity:.92}
+.preview .pv-img{height:70px;border-radius:9px;background:linear-gradient(90deg,#f08a5d,#7b8cff);margin:6px 0 4px}
+.preview .pv-cap{font-size:11.5px;opacity:.5}
+.controls{display:flex;flex-direction:column;gap:22px;margin-top:22px}
+.ctl-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.ctl-label{font-size:13px;color:var(--muted);width:92px;flex:none}
+.swatches{display:flex;gap:10px}
+.sw{width:34px;height:34px;border-radius:50%;border:0;cursor:pointer;position:relative;padding:0;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),0 0 0 1px var(--line);transition:transform .2s var(--ease)}
+.sw:hover{transform:scale(1.08)}
+.sw[aria-checked="true"]::after{content:"";position:absolute;inset:-5px;border-radius:50%;box-shadow:0 0 0 2px var(--accent)}
+.range{flex:1;min-width:140px;accent-color:var(--accent)}
+.val{font:500 12.5px/1 var(--mono);color:var(--muted);width:44px;text-align:right;font-variant-numeric:tabular-nums}
+.rules{display:flex;flex-direction:column}
+.rule{display:grid;grid-template-columns:150px minmax(0,1fr);gap:18px;padding-block:18px;border-top:1px solid var(--line)}
+.rule:first-child{border-top:0;padding-top:0}
+.rule h3{font:600 15.5px/1.5 var(--body)}
+.rule p{font-size:14.5px;color:var(--muted)}
+.seg{display:inline-flex;background:var(--paper-2);border-radius:9px;padding:2px;margin-top:8px}
+.seg span{padding:4px 10px;border-radius:7px;font-size:12.5px;color:var(--muted)}
+.seg span.on{background:var(--paper);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.mono{font-family:var(--mono);font-size:.92em}
+
+/* ---------- 阅读模式 ---------- */
+.reader-demo{position:relative;border-radius:14px;background:var(--mock-bg);box-shadow:0 0 0 1px var(--line),0 30px 60px -36px var(--glass-shadow);overflow:hidden}
+.rd-tools{display:flex;justify-content:flex-end;gap:2px;padding:14px 16px 0}
+.tool{width:34px;height:34px;border-radius:50%;border:0;background:transparent;color:var(--mock-sub);cursor:pointer;display:grid;place-items:center;
+  font:600 14px/1 var(--mark);transition:background .2s,color .2s}
+.tool:hover{background:var(--hover);color:var(--mock-ink)}
+.tool.on{color:var(--accent);background:color-mix(in srgb, var(--accent) 12%, transparent)}
+.tool svg{width:15px;height:15px}
+.rd-panel{display:flex;flex-wrap:wrap;gap:10px 22px;padding:12px 24px 0;font-size:13px;color:var(--mock-sub)}
+.rd-panel .grp{display:flex;align-items:center;gap:8px}
+.pill-seg{display:inline-flex;background:var(--paper-2);border-radius:8px;padding:2px}
+.pill-seg button{border:0;background:transparent;color:var(--muted);font:12.5px/1 var(--body);padding:6px 9px;border-radius:6px;cursor:pointer}
+.pill-seg button[aria-checked="true"]{background:var(--mock-bg);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.rd-page{margin:0 auto;padding:22px 28px 40px;max-width:var(--rw,560px);transition:max-width .35s var(--ease);color:var(--mock-ink)}
+.rd-site{font:600 11px/1 var(--body);letter-spacing:.12em;color:var(--mock-sub)}
+.rd-page h4{font:700 26px/1.35 var(--rf,var(--body));margin:10px 0 6px;letter-spacing:-.01em}
+.rd-meta{font-size:12px;color:var(--mock-sub);padding-bottom:18px;margin-bottom:20px;border-bottom:1px solid var(--line)}
+.rd-body{font-family:var(--rf,var(--body));font-size:var(--rs,17px);line-height:1.85}
+.rd-body p{margin-bottom:1.05em;transition:background .35s,box-shadow .35s;border-radius:3px}
+.rd-body p.speaking{background:var(--amber);box-shadow:0 0 0 7px var(--amber)}
+.reader-side{display:flex;flex-direction:column;gap:22px}
+.reader-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:56px;align-items:start}
+.point h3{font:600 16px/1.5 var(--body)}
+.point p{font-size:14.5px;color:var(--muted);margin-top:4px}
+.voice-note{font-size:12.5px;color:var(--muted);min-height:1.5em}
+
+/* ---------- 细节 ---------- */
+.details{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 40px}
+.detail{padding-block:26px;border-top:1px solid var(--line)}
+.detail svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;margin-bottom:12px}
+.detail h3{font:600 16px/1.45 var(--body)}
+.detail p{font-size:14px;color:var(--muted);margin-top:4px}
+
+/* ---------- 安装 ---------- */
+.install{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;align-items:start}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;padding-block:18px;border-top:1px solid var(--line)}
+.steps li:first-child{border-top:0;padding-top:0}
+.steps li::before{content:counter(s);font:700 26px/1 var(--mark);color:var(--muted)}
+.steps h3{font:600 16px/1.5 var(--body)}
+.steps p{font-size:14.5px;color:var(--muted);margin-top:4px}
+.copy{display:inline-flex;align-items:center;gap:8px;margin-top:10px;padding:6px 6px 6px 12px;border-radius:9px;background:var(--paper-2);
+  font:500 13px/1 var(--mono);color:var(--ink);max-width:100%;overflow-x:auto}
+.copy button{border:0;border-radius:6px;padding:6px 9px;background:var(--paper);color:var(--ink);font:12px/1 var(--body);cursor:pointer;
+  box-shadow:0 0 0 1px var(--line);flex:none}
+table.keys{width:100%;border-collapse:collapse;font-size:14.5px}
+table.keys th{text-align:left;font:600 12px/1 var(--body);letter-spacing:.1em;color:var(--muted);padding:0 0 12px}
+table.keys td{padding:13px 0;border-top:1px solid var(--line)}
+table.keys td:not(:first-child){white-space:nowrap}
+.tbl{overflow-x:auto}
+.foot{padding-block:40px 120px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+
+/* ---------- 这一页上真实可用的 Glide 胶囊 ---------- */
+.dock{position:fixed;right:calc(20px + env(safe-area-inset-right, 0px));bottom:calc(26px + env(safe-area-inset-bottom, 0px));z-index:50;
+  display:flex;flex-direction:column;padding:4px;border-radius:999px;background:var(--glass);color:var(--glass-fg);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);
+  box-shadow:0 0 0 .5px var(--glass-ring),0 8px 28px -6px var(--glass-shadow),0 1px 2px var(--glass-shadow);
+  opacity:0;transform:translateX(10px) scale(.96);pointer-events:none;
+  transition:opacity .35s var(--ease),transform .5s var(--ease),background .3s}
+.dock.show{opacity:1;transform:none;pointer-events:auto}
+.dock button{all:unset;box-sizing:border-box;position:relative;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;cursor:pointer;overflow:hidden;
+  transition:background .2s,transform .2s var(--ease),opacity .3s var(--ease),height .4s var(--ease)}
+.dock button:hover{background:var(--hover)}
+.dock button:active{transform:scale(.88)}
+.dock button:focus-visible{box-shadow:0 0 0 2px var(--accent)}
+.dock button.off{height:0;opacity:0;pointer-events:none}
+.dock svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dock .theme svg{position:absolute;inset:0;margin:auto;transition:transform .55s var(--ease),opacity .3s}
+.dock .sun{opacity:0;transform:rotate(-90deg) scale(.4)}
+.dock.is-dark .sun{opacity:1;transform:none}
+.dock.is-dark .moon{opacity:0;transform:rotate(90deg) scale(.4)}
+.dock .book.on{color:var(--accent);background:color-mix(in srgb, var(--accent) 12%, transparent)}
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+
+/* 整页阅读模式 */
+.overlay{position:fixed;inset:0;z-index:40;background:var(--mock-bg);overflow-y:auto;opacity:0;transition:opacity .35s var(--ease);
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.overlay.in{opacity:1}
+.overlay .rd-page{max-width:660px;padding-block:96px 140px;transform:translateY(12px);transition:transform .5s var(--ease)}
+.overlay.in .rd-page{transform:none}
+.overlay .x{position:fixed;top:calc(16px + env(safe-area-inset-top, 0px));right:calc(20px + env(safe-area-inset-right, 0px));z-index:2;
+  width:38px;height:38px;border-radius:50%;border:0;cursor:pointer;display:grid;place-items:center;color:var(--glass-fg);background:var(--glass);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:0 0 0 .5px var(--glass-ring),0 6px 18px -6px var(--glass-shadow)}
+.overlay .x svg{width:15px;height:15px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round}
+.bar{position:fixed;left:0;top:0;height:2px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:var(--accent);z-index:3;opacity:.6}
+
+/* ---------- 窄屏 ---------- */
+@media (max-width:860px){
+  .hero,.sec-head,.night-grid,.reader-grid,.install{grid-template-columns:minmax(0,1fr);gap:36px}
+  .details{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hero{padding-block:24px 64px}
+  section.band{padding-block:72px}
+}
+@media (max-width:640px){.top nav{display:none}}
+@media (max-width:560px){
+  .details{grid-template-columns:minmax(0,1fr)}
+  .anatomy{grid-template-columns:64px minmax(0,1fr);column-gap:20px}
+  .anatomy .lab{grid-template-columns:minmax(0,1fr)}
+  .lab .keys{display:none}
+  .rule{grid-template-columns:minmax(0,1fr);gap:4px}
+  .mock-page{padding:18px 20px}
+  .rd-page{padding:18px 18px 32px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="mark"><span class="mark-icon" aria-hidden="true"></span>Glide</div>
+    <div class="top-right">
+      <nav aria-label="Sections">
+        <a href="#buttons"><span class="zh">四个按钮</span><span class="en">Buttons</span></a>
+        <a href="#night"><span class="zh">夜间模式</span><span class="en">Dark mode</span></a>
+        <a href="#reader"><span class="zh">阅读模式</span><span class="en">Reading</span></a>
+        <a href="#install"><span class="zh">安装</span><span class="en">Install</span></a>
+      </nav>
+      <div class="lang" role="group" aria-label="Language / 语言">
+        <button type="button" data-lang="zh" aria-pressed="false">中文</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <h1 class="zh">需要时出现，<br><span class="soft">不需要时消失。</span></h1>
+        <h1 class="en">There when you need it.<br><span class="soft">Gone when you don't.</span></h1>
+        <p class="lede zh">Glide 是一个安静的浏览器扩展。网页右下角一枚小小的毛玻璃胶囊：<b>回到顶部、明暗切换、阅读模式、到底部</b>。平时完全看不见，滚动或把鼠标移过去时才淡入。</p>
+        <p class="lede en">Glide is a quiet browser extension. A small frosted-glass pill in the corner of every page: <b>back to top, light / dark, reading mode, to bottom</b>. It stays invisible until you scroll or move the mouse toward it.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="#install"><span class="zh">安装 Glide</span><span class="en">Install Glide</span></a>
+          <a class="btn btn-ghost" href="#buttons"><span class="zh">看看它能做什么</span><span class="en">See what it does</span></a>
+        </div>
+        <p class="try">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 9v8H9"/></svg>
+          <span class="zh">这一页就装着 Glide。往下滚，或把鼠标移到右下角试试。</span>
+          <span class="en">This page has Glide on it. Scroll down, or move the mouse to the bottom-right corner.</span>
+        </p>
+        <div class="specs"><span>Chrome · Edge · Arc</span><span>v1.2</span><span class="zh">只申请「存储」一个权限</span><span class="en">One permission: storage</span><span class="zh">中文 / English</span><span class="en">English / 中文</span></div>
+      </div>
+
+      <div class="mock" role="img" aria-label="Clicking the moon button expands dark mode as a circle from the button / 点击月亮按钮，夜间模式从按钮处圆形展开">
+        <div class="mock-bar"><i></i><i></i><i></i><span class="mock-url">example.com/essay/slow-reading</span></div>
+        <div class="mock-view">
+          <div class="mock-page" aria-hidden="true">
+            <h4 class="zh">慢慢读，才读得进去</h4><h4 class="en">Read slowly, read more</h4>
+            <div class="m-meta"><span class="zh">约 4 分钟读完</span><span class="en">4 min read</span></div>
+            <p class="zh">很多时候我们读得太快，眼睛扫过了文字，脑子却没有跟上。放慢一点，反而读得更多。</p>
+            <p class="en">We often read too fast. The eyes move on, the mind falls behind. Slow down a little and you take in more.</p>
+            <div class="m-img"></div>
+            <p class="zh">好的工具也一样：需要时触手可及，不需要时毫无存在感。</p>
+            <p class="en">Good tools work the same way: within reach when needed, unnoticed when not.</p>
+            <p class="zh">夜里打开一篇长文，光线刺眼，点一下右下角的月亮就好。</p>
+            <p class="en">Reading a long piece at night? Tap the moon in the corner.</p>
+          </div>
+          <div class="mock-page night" aria-hidden="true">
+            <h4 class="zh">慢慢读，才读得进去</h4><h4 class="en">Read slowly, read more</h4>
+            <div class="m-meta"><span class="zh">约 4 分钟读完</span><span class="en">4 min read</span></div>
+            <p class="zh">很多时候我们读得太快，眼睛扫过了文字，脑子却没有跟上。放慢一点，反而读得更多。</p>
+            <p class="en">We often read too fast. The eyes move on, the mind falls behind. Slow down a little and you take in more.</p>
+            <div class="m-img"></div>
+            <p class="zh">好的工具也一样：需要时触手可及，不需要时毫无存在感。</p>
+            <p class="en">Good tools work the same way: within reach when needed, unnoticed when not.</p>
+            <p class="zh">夜里打开一篇长文，光线刺眼，点一下右下角的月亮就好。</p>
+            <p class="en">Reading a long piece at night? Tap the moon in the corner.</p>
+          </div>
+          <div class="mock-dock" aria-hidden="true">
+            <span><svg viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M6 11l6-6 6 6"/></svg></span>
+            <span class="hot"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></span>
+            <span><svg viewBox="0 0 24 24"><path d="M2.5 4.5h5.5a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2.5z"/><path d="M21.5 4.5H16a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h6.5z"/></svg></span>
+            <span><svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M6 13l6 6 6-6"/></svg></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 四个按钮 -->
+    <section class="band" id="buttons">
+      <div class="sec-head">
+        <h2 class="zh">四个按钮，<br>各管一件事。</h2>
+        <h2 class="en">Four buttons,<br>one job each.</h2>
+        <p class="zh">胶囊停下 1.4 秒后自己淡出。已经在顶部时，↑ 会收起来；到了底部，↓ 也一样。全屏看视频、打印网页时，它会自动让开。</p>
+        <p class="en">The pill fades out 1.4 seconds after you stop. At the top of a page, ↑ tucks itself away; at the bottom, so does ↓. It steps aside for fullscreen video and printing.</p>
+      </div>
+      <div class="anatomy">
+        <div class="pill" aria-hidden="true"></div>
+
+        <div class="ico r1" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M6 11l6-6 6 6"/></svg></div>
+        <div class="lab r1"><div>
+          <h3 class="zh">回到顶部</h3><h3 class="en">Back to top</h3>
+          <p class="zh">平滑滚回开头。邮箱、文档这类在内部滚动的网页也认得。</p>
+          <p class="en">Glides back to the start. Works in web apps like mail and docs that scroll inside a panel.</p>
+        </div><div class="keys"><kbd>⌥</kbd><kbd>⇧</kbd><kbd>↑</kbd></div></div>
+
+        <div class="ico r2" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></div>
+        <div class="lab r2"><div>
+          <h3 class="zh">明暗切换</h3><h3 class="en">Light / dark</h3>
+          <p class="zh">夜间模式从按钮处画一个圆，向整个页面展开。</p>
+          <p class="en">Dark mode opens as a circle from the button and spreads across the page.</p>
+        </div><div class="keys"><kbd>⌥</kbd><kbd>⇧</kbd><kbd>L</kbd></div></div>
+
+        <div class="ico r3" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.5 4.5h5.5a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2.5z"/><path d="M21.5 4.5H16a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h6.5z"/></svg></div>
+        <div class="lab r3"><div>
+          <h3 class="zh">阅读模式</h3><h3 class="en">Reading mode</h3>
+          <p class="zh">只留正文，去掉导航、侧栏、评论和广告。打开时按钮保持高亮。</p>
+          <p class="en">Keeps the article, drops navigation, sidebars, comments and ads. The button stays lit while it's open.</p>
+        </div><div class="keys"><kbd>⌥</kbd><kbd>⇧</kbd><kbd>R</kbd></div></div>
+
+        <div class="ico r4" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M6 13l6 6 6-6"/></svg></div>
+        <div class="lab last r4"><div>
+          <h3 class="zh">到底部</h3><h3 class="en">To bottom</h3>
+          <p class="zh">直接到页尾，看评论、找翻页都方便。</p>
+          <p class="en">Jumps to the end, for comments or the next-page link.</p>
+        </div><div class="keys"><kbd>⌥</kbd><kbd>⇧</kbd><kbd>↓</kbd></div></div>
+      </div>
+    </section>
+
+    <!-- 夜间模式 -->
+    <section class="band" id="night">
+      <div class="sec-head">
+        <h2 class="zh">夜间模式，<br>不只是反色。</h2>
+        <h2 class="en">Dark mode that<br>isn't just inverted.</h2>
+        <p class="zh">底色是柔和的深灰，不是刺眼的纯黑；图片和视频保持原来的颜色，链接还是蓝色。下面这块可以直接调。</p>
+        <p class="en">A soft dark gray instead of harsh black. Images and videos keep their real colors, and links stay blue. Try the controls below.</p>
+      </div>
+      <div class="night-grid">
+        <div>
+          <div class="preview" id="preview">
+            <h4 class="zh">今晚读点什么</h4><h4 class="en">Something to read tonight</h4>
+            <div class="pv-meta"><span class="zh">example.com · 约 3 分钟读完</span><span class="en">example.com · 3 min read</span></div>
+            <p class="zh">正文是浅灰，不是纯白，看久了眼睛不累。卡片、分隔块的深浅层次都还在。</p>
+            <p class="en">Body text is light gray, not pure white, so long reads are easy on the eyes. Cards and panels keep their layers.</p>
+            <div class="pv-img" aria-hidden="true"></div>
+            <p class="pv-cap"><span class="zh">图片保持原色</span><span class="en">Images keep their colors</span></p>
+          </div>
+          <div class="controls">
+            <div class="ctl-row">
+              <span class="ctl-label"><span class="zh">夜间底色</span><span class="en">Background</span></span>
+              <div class="swatches" id="swatches" role="radiogroup" aria-label="Background"></div>
+              <span class="val" id="swName" style="width:auto"></span>
+            </div>
+            <div class="ctl-row">
+              <label class="ctl-label" for="bright"><span class="zh">网站亮度</span><span class="en">Site brightness</span></label>
+              <input class="range" type="range" id="bright" min="60" max="140" step="5" value="100">
+              <span class="val" id="brightVal">100%</span>
+            </div>
+          </div>
+        </div>
+        <div class="rules">
+          <div class="rule"><h3><span class="zh">自动开启</span><span class="en">Auto-enable</span></h3><div>
+            <p class="zh">三种方式任选。手动设置过的网站，以你的选择为准。</p>
+            <p class="en">Pick one of three. Sites you've set by hand keep your choice.</p>
+            <div class="seg" aria-hidden="true"><span class="on"><span class="zh">跟随系统</span><span class="en">System</span></span><span><span class="zh">定时</span><span class="en">Schedule</span></span><span><span class="zh">关闭</span><span class="en">Off</span></span></div></div></div>
+          <div class="rule"><h3><span class="zh">定时</span><span class="en">Schedule</span></h3>
+            <p class="zh">例如 <span class="mono">19:00 – 07:00</span>，可以跨午夜。到点自动切换，电脑睡眠醒来也会立刻检查。</p>
+            <p class="en">For example <span class="mono">19:00 – 07:00</span>, across midnight if you like. It switches on time and checks again as soon as your computer wakes.</p></div>
+          <div class="rule"><h3><span class="zh">跳过深色网站</span><span class="en">Skips dark sites</span></h3>
+            <p class="zh">网页本身已经是深色的，就不会被反成白底。</p>
+            <p class="en">Pages that are already dark never get flipped to white.</p></div>
+          <div class="rule"><h3><span class="zh">按网站微调</span><span class="en">Per-site tuning</span></h3>
+            <p class="zh">反色效果不好的网站，可以单独调亮度，或者设成不自动开启。</p>
+            <p class="en">For sites that don't invert well, adjust brightness or keep auto-enable off for that site alone.</p></div>
+          <div class="rule"><h3><span class="zh">五种底色</span><span class="en">Five backgrounds</span></h3>
+            <p class="zh">石墨、夜蓝、暖棕、墨绿、纯黑，文字亮度也能调。</p>
+            <p class="en">Graphite, Night Blue, Warm Brown, Ink Green and Pure Black, plus adjustable text brightness.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 阅读模式 -->
+    <section class="band" id="reader">
+      <div class="sec-head">
+        <h2 class="zh">只留下正文，<br>还能读给你听。</h2>
+        <h2 class="en">Just the article,<br>read aloud if you like.</h2>
+        <p class="zh">阅读模式会找出文章正文，换成舒服的字号和行宽。右边这块就是它的样子，Aa 和 ▶ 都能点。</p>
+        <p class="en">Reading mode finds the article and sets it in a comfortable size and line length. The panel on the right is what it looks like; try Aa and ▶.</p>
+      </div>
+      <div class="reader-grid">
+        <div class="reader-side">
+          <div class="point"><h3><span class="zh">排版随你</span><span class="en">Your typography</span></h3>
+            <p class="zh">字号、行宽（窄 / 中 / 宽）、黑体或宋体，设置一次，所有网站都记住。</p>
+            <p class="en">Font size, line width (narrow / medium / wide), sans or serif. Set it once and every site remembers.</p></div>
+          <div class="point"><h3><span class="zh">朗读</span><span class="en">Read aloud</span></h3>
+            <p class="zh">用系统自带的语音逐段朗读，正在读的段落淡黄高亮，自动滚到视野中间。读的时候点任意一段，就从那里接着读。</p>
+            <p class="en">Reads paragraph by paragraph with your system's built-in voices. The current paragraph glows soft yellow and stays in view. Click any paragraph to continue from there.</p></div>
+          <div class="point"><h3><span class="zh">不用联网</span><span class="en">Works offline</span></h3>
+            <p class="zh">优先使用本机语音：macOS 上是「婷婷」，Windows 上是「晓晓」或「慧慧」。</p>
+            <p class="en">Prefers on-device voices: Samantha or Tingting on macOS, Aria, Xiaoxiao or Huihui on Windows.</p></div>
+          <p class="voice-note" id="voiceNote" aria-live="polite"></p>
+        </div>
+        <div class="reader-demo" id="rd">
+          <div class="rd-tools">
+            <button class="tool" id="aa" aria-expanded="false" aria-controls="rdPanel">Aa</button>
+            <button class="tool" id="play">
+              <svg viewBox="0 0 24 24" id="playIcon"><path fill="currentColor" d="M8 5.8v12.4a.8.8 0 0 0 1.2.7l10-6.2a.8.8 0 0 0 0-1.4l-10-6.2A.8.8 0 0 0 8 5.8z"/></svg>
+            </button>
+          </div>
+          <div class="rd-panel" id="rdPanel" hidden>
+            <div class="grp"><span class="zh">字号</span><span class="en">Size</span>
+              <div class="pill-seg"><button data-fs="-1" aria-label="A−">A−</button><button data-fs="1" aria-label="A+">A+</button></div></div>
+            <div class="grp"><span class="zh">行宽</span><span class="en">Width</span>
+              <div class="pill-seg" role="radiogroup"><button role="radio" data-w="480px"><span class="zh">窄</span><span class="en">Narrow</span></button><button role="radio" data-w="560px" aria-checked="true"><span class="zh">中</span><span class="en">Medium</span></button><button role="radio" data-w="100%"><span class="zh">宽</span><span class="en">Wide</span></button></div></div>
+            <div class="grp"><span class="zh">字体</span><span class="en">Font</span>
+              <div class="pill-seg" role="radiogroup"><button role="radio" data-f="sans" aria-checked="true"><span class="zh">黑体</span><span class="en">Sans</span></button><button role="radio" data-f="serif"><span class="zh">宋体</span><span class="en">Serif</span></button></div></div>
+          </div>
+          <article class="rd-page" id="rdPage">
+            <div class="rd-site">EXAMPLE.COM</div>
+            <h4 class="zh">工具应当像空气一样</h4><h4 class="en">Tools should be like air</h4>
+            <div class="rd-meta"><span class="zh">约 2 分钟读完</span><span class="en">2 min read</span></div>
+            <div class="rd-body" id="rdBody">
+              <p class="zh">一个好的工具，应当像空气一样存在：需要时触手可及，不需要时毫无存在感。</p>
+              <p class="en">A good tool should be like air: within reach when you need it, unnoticed when you don't.</p>
+              <p class="zh">很多扩展喜欢在页面上堆满按钮，生怕你找不到功能。真正好用的工具，只在你需要的那一刻出现，然后安静地退场。</p>
+              <p class="en">Many extensions pile buttons onto the page in case you miss a feature. The good ones show up only at the moment you need them, then quietly leave.</p>
+              <p class="zh">动效也要克制。过渡控制在三百到五百毫秒之间，用缓出曲线，让元素像是被轻轻放下，而不是被扔到屏幕上。</p>
+              <p class="en">Motion should be restrained too. Keep transitions between 300 and 500 milliseconds with an ease-out curve, so things are set down gently instead of thrown onto the screen.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 细节 -->
+    <section class="band" id="details">
+      <div class="sec-head">
+        <h2 class="zh">看不见的细节。</h2>
+        <h2 class="en">Details you won't notice.</h2>
+        <p class="zh">大部分时候你感觉不到它们，这正是目的。</p>
+        <p class="en">Most of the time you won't feel them at all. That's the point.</p>
+      </div>
+      <div class="details">
+        <div class="detail">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+          <h3 class="zh">每个网站分别记住</h3><h3 class="en">Remembers each site</h3>
+          <p class="zh">在哪个网站开了夜间、调过亮度，下次打开还是那样。</p>
+          <p class="en">Dark mode and brightness you set on a site are still there next time.</p></div>
+        <div class="detail">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/><path d="M18 9v4"/></svg>
+          <h3 class="zh">认得内部滚动</h3><h3 class="en">Knows inner scrolling</h3>
+          <p class="zh">邮箱、文档这类网页应用在内部区域滚动，按钮照样好用。</p>
+          <p class="en">Mail and docs apps that scroll inside a panel work just as well.</p></div>
+        <div class="detail">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+          <h3 class="zh">全屏和打印时让开</h3><h3 class="en">Out of the way</h3>
+          <p class="zh">看视频进入全屏、打印网页时，胶囊自动隐藏。</p>
+          <p class="en">The pill hides in fullscreen video and when you print a page.</p></div>
+        <div class="detail">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><rect x="5.5" y="13" width="3" height="5" rx="1.5"/><rect x="15.5" y="13" width="3" height="5" rx="1.5"/></svg>
+          <h3 class="zh">四个位置可选</h3><h3 class="en">Four positions</h3>
+          <p class="zh">右下、左下、右侧中间、左侧中间，避开网站自己的按钮。</p>
+          <p class="en">Bottom right, bottom left, or the middle of either edge, clear of a site's own buttons.</p></div>
+        <div class="detail">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h3l2-5 4 10 2-5h3"/></svg>
+          <h3 class="zh">尊重系统设置</h3><h3 class="en">Respects your system</h3>
+          <p class="zh">系统开了「减弱动态效果」，所有动画都会关掉。</p>
+          <p class="en">With “Reduce motion” on, every animation turns off.</p></div>
+        <div class="detail">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          <h3 class="zh">不碰你的数据</h3><h3 class="en">Leaves your data alone</h3>
+          <p class="zh">只申请「存储」一个权限，用来记住设置。不联网，不收集任何东西。</p>
+          <p class="en">One permission, storage, to remember settings. No network requests, nothing collected.</p></div>
+      </div>
+    </section>
+
+    <!-- 安装 -->
+    <section class="band" id="install">
+      <div class="sec-head">
+        <h2 class="zh">一分钟装好。</h2>
+        <h2 class="en">Installed in a minute.</h2>
+        <p class="zh">适用于 Chrome、Edge、Arc 等基于 Chromium 的浏览器。界面跟随浏览器语言，支持中文和英文。</p>
+        <p class="en">For Chrome, Edge, Arc and other Chromium browsers. The interface follows your browser language, in English or Chinese.</p>
+      </div>
+      <div class="install">
+        <ol class="steps">
+          <li><div><h3><span class="zh">下载代码</span><span class="en">Get the code</span></h3>
+            <p class="zh">从 GitHub 克隆，或在仓库页面点 Code → Download ZIP 并解压。</p>
+            <p class="en">Clone it from GitHub, or click Code → Download ZIP on the repository page and unzip.</p>
+            <span class="copy"><span id="cloneCmd">git clone https://github.com/calabli/glide.git</span><button type="button" class="copy-btn" data-target="cloneCmd"></button></span></div></li>
+          <li><div><h3><span class="zh">打开扩展管理页</span><span class="en">Open the extensions page</span></h3>
+            <p class="zh">在地址栏输入下面的地址并回车。Edge 用户把 chrome 换成 edge。</p>
+            <p class="en">Type this into the address bar and press Enter. In Edge, use edge:// instead.</p>
+            <span class="copy"><span id="extUrl">chrome://extensions</span><button type="button" class="copy-btn" data-target="extUrl"></button></span></div></li>
+          <li><div><h3><span class="zh">打开「开发者模式」</span><span class="en">Turn on Developer mode</span></h3>
+            <p class="zh">开关在页面右上角。</p><p class="en">The switch is in the top-right corner.</p></div></li>
+          <li><div><h3><span class="zh">加载 glide 文件夹</span><span class="en">Load the glide folder</span></h3>
+            <p class="zh">点「加载已解压的扩展程序」，选择 glide 文件夹。网页右下角出现胶囊，就装好了。</p>
+            <p class="en">Click Load unpacked and choose the glide folder. When the pill appears in a page's corner, you're set.</p></div></li>
+        </ol>
+        <div class="tbl">
+          <table class="keys">
+            <thead><tr><th><span class="zh">快捷键</span><span class="en">SHORTCUT</span></th><th>macOS</th><th>Windows</th></tr></thead>
+            <tbody>
+              <tr><td><span class="zh">回到顶部</span><span class="en">Back to top</span></td><td><kbd>⌥⇧↑</kbd></td><td><kbd>Alt+Shift+↑</kbd></td></tr>
+              <tr><td><span class="zh">到底部</span><span class="en">To bottom</span></td><td><kbd>⌥⇧↓</kbd></td><td><kbd>Alt+Shift+↓</kbd></td></tr>
+              <tr><td><span class="zh">切换明暗</span><span class="en">Light / dark</span></td><td><kbd>⌥⇧L</kbd></td><td><kbd>Alt+Shift+L</kbd></td></tr>
+              <tr><td><span class="zh">阅读模式</span><span class="en">Reading mode</span></td><td><kbd>⌥⇧R</kbd></td><td><kbd>Alt+Shift+R</kbd></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>Glide 1.2 · <a href="https://github.com/calabli/glide">github.com/calabli/glide</a></span>
+    <span class="zh">快捷键可以在 chrome://extensions/shortcuts 里改。</span>
+    <span class="en">Change shortcuts at chrome://extensions/shortcuts.</span>
+  </footer>
+</div>
+
+<!-- 这一页上真实可用的胶囊 -->
+<div class="dock" id="dock" role="toolbar" aria-label="Glide">
+  <button class="up"><svg viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M6 11l6-6 6 6"/></svg></button>
+  <button class="theme">
+    <svg class="moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+    <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg>
+  </button>
+  <button class="book" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M2.5 4.5h5.5a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2.5z"/><path d="M21.5 4.5H16a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h6.5z"/></svg></button>
+  <button class="down"><svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M6 13l6 6 6-6"/></svg></button>
+</div>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const root = document.documentElement;
+
+  /* ---------- 语言 ---------- */
+  const T = {
+    zh: {
+      title: 'Glide 浏览器扩展', top: '回到顶部', bottom: '到底部', theme: '切换明暗', reader: '阅读模式', exit: '退出阅读模式 (Esc)',
+      typo: '排版', play: '朗读', pause: '暂停朗读', copy: '复制', copied: '已复制', selected: '已选中',
+      swatches: ['石墨', '夜蓝', '暖棕', '墨绿', '纯黑'],
+      speaking: (v) => `正在用「${v}」朗读。`, noVoice: '这台设备没有找到中文语音，只演示高亮。', mute: '这里没法出声，只演示高亮。',
+      voiceLang: 'zh', ttsLang: 'zh-CN',
+      article: ['GLIDE', '需要时出现，不需要时消失', '约 2 分钟读完 · 这就是阅读模式', [
+        'Glide 是一个安静的浏览器扩展。网页右下角一枚小小的毛玻璃胶囊，四个按钮：回到顶部、明暗切换、阅读模式、到底部。',
+        '它平时完全看不见。滚动的时候，或者把鼠标移到右下角，它才淡入；停下来一秒多，又自己淡出。已经在顶部时，向上的箭头会收起来；到了底部，向下的箭头也一样。',
+        '夜间模式的底色是柔和的深灰，不是刺眼的纯黑。图片和视频保持原来的颜色，链接还是蓝色。它可以跟随系统，也可以定时开启，比如晚上七点到早上七点；本来就是深色的网站会被自动跳过。',
+        '阅读模式会找出文章正文，去掉导航、侧栏、评论和广告，换成舒服的字号和行宽。右上角的 Aa 可以调字号、行宽和字体；旁边的播放按钮会用系统自带的语音，逐段把文章读给你听。',
+        '它只申请「存储」一个权限，用来记住你的设置。不联网，不收集任何东西。界面支持中文和英文，跟随浏览器语言。',
+        '按 Esc，或者点右上角的叉，就能回到原来的页面。']],
+    },
+    en: {
+      title: 'Glide browser extension', top: 'Back to top', bottom: 'To bottom', theme: 'Light / dark', reader: 'Reading mode', exit: 'Exit reading mode (Esc)',
+      typo: 'Typography', play: 'Read aloud', pause: 'Pause', copy: 'Copy', copied: 'Copied', selected: 'Selected',
+      swatches: ['Graphite', 'Night Blue', 'Warm Brown', 'Ink Green', 'Pure Black'],
+      speaking: (v) => `Reading with “${v}”.`, noVoice: 'No English voice found on this device, so only the highlight is shown.', mute: 'Sound isn\'t available here, so only the highlight is shown.',
+      voiceLang: 'en', ttsLang: 'en-US',
+      article: ['GLIDE', 'There when you need it, gone when you don\'t', '2 min read · This is reading mode', [
+        'Glide is a quiet browser extension. A small frosted-glass pill sits in the corner of every page with four buttons: back to top, light / dark, reading mode and to bottom.',
+        'Most of the time you can\'t see it. It fades in when you scroll or move the mouse to the corner, and fades out a second or so after you stop. At the top of a page the up arrow tucks away; at the bottom, so does the down arrow.',
+        'Dark mode uses a soft dark gray instead of harsh black. Images and videos keep their colors, and links stay blue. It can follow your system or run on a schedule, say from seven in the evening to seven in the morning, and it skips sites that are already dark.',
+        'Reading mode finds the article, removes navigation, sidebars, comments and ads, and sets the text at a comfortable size and line length. Aa in the top-right corner adjusts size, width and font; the play button next to it reads the article aloud with your system\'s voices.',
+        'Glide asks for one permission, storage, to remember your settings. It makes no network requests and collects nothing. The interface comes in English and Chinese and follows your browser language.',
+        'Press Esc or click the × in the corner to return to the page.']],
+    },
+  };
+  let lang = 'zh';
+  const tr = () => T[lang];
+  function detectLang() {
+    try { const s = localStorage.getItem('glide-site-lang'); if (s === 'zh' || s === 'en') return s; } catch {}
+    return /^zh\b/i.test(navigator.language || '') ? 'zh' : 'en';
+  }
+
+  /* ---------- 胶囊：显示 / 隐藏 ---------- */
+  const dock = $('#dock'), up = $('.up', dock), down = $('.down', dock), themeBtn = $('.theme', dock), book = $('.book', dock);
+  let hovering = false, near = false, timer = 0, overlay = null;
+  const scroller = () => (overlay ? overlay : document.scrollingElement);
+  function update() {
+    const s = scroller();
+    const y = s.scrollTop, max = s.scrollHeight - s.clientHeight;
+    up.classList.toggle('off', y < 8);
+    down.classList.toggle('off', max - y < 8);
+  }
+  function show(ms = 1400) {
+    dock.classList.add('show');
+    clearTimeout(timer);
+    if (!hovering && !near) timer = setTimeout(() => { if (!hovering && !near) dock.classList.remove('show'); }, ms);
+  }
+  addEventListener('scroll', () => { update(); show(); }, { passive: true });
+  addEventListener('mousemove', (e) => {
+    const was = near;
+    near = innerWidth - e.clientX < 100 && innerHeight - e.clientY < 240;
+    if (near || was) { update(); show(); }
+  }, { passive: true });
+  dock.addEventListener('mouseenter', () => { hovering = true; show(); });
+  dock.addEventListener('mouseleave', () => { hovering = false; show(); });
+  addEventListener('resize', update, { passive: true });
+  update();
+  show(2600);   // 打开页面时先露个面，让人知道它在哪
+
+  up.onclick = () => scroller().scrollTo({ top: 0, behavior: reduce() ? 'auto' : 'smooth' });
+  down.onclick = () => { const s = scroller(); s.scrollTo({ top: s.scrollHeight, behavior: reduce() ? 'auto' : 'smooth' }); };
+
+  /* ---------- 明暗：从按钮处圆形展开 ---------- */
+  const sysDark = matchMedia('(prefers-color-scheme: dark)');
+  const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : sysDark.matches;
+  const paintTheme = () => dock.classList.toggle('is-dark', isDark());
+  paintTheme();
+  sysDark.addEventListener('change', paintTheme);
+  let vt = null;
+  themeBtn.onclick = () => {
+    const next = isDark() ? 'light' : 'dark';
+    const apply = () => { root.dataset.theme = next; paintTheme(); };
+    if (vt) { vt.skipTransition(); apply(); return; }
+    if (!document.startViewTransition || reduce()) { apply(); return; }
+    const r = themeBtn.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const rad = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    let started = false;
+    vt = document.startViewTransition(() => { started = true; apply(); });
+    setTimeout(() => { if (!started && vt) { vt.skipTransition(); apply(); vt = null; } }, 300);
+    vt.ready.then(() => root.animate(
+      { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${rad}px at ${x}px ${y}px)`] },
+      { duration: 650, easing: 'cubic-bezier(.65,0,.35,1)', pseudoElement: '::view-transition-new(root)' }
+    )).catch(() => {});
+    vt.finished.catch(() => {}).finally(() => { vt = null; });
+  };
+
+  /* ---------- 整页阅读模式 ---------- */
+  const escHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function openReader() {
+    const [site, title, meta, paras] = tr().article;
+    overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-label', tr().reader);
+    overlay.tabIndex = -1;
+    overlay.innerHTML = `<div class="bar"></div>
+      <button class="x" aria-label="${escHtml(tr().exit)}" title="${escHtml(tr().exit)}"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <article class="rd-page"><div class="rd-site">${site}</div><h4>${escHtml(title)}</h4><div class="rd-meta">${escHtml(meta)}</div>
+      <div class="rd-body">${paras.map((p) => `<p>${escHtml(p)}</p>`).join('')}</div></article>`;
+    document.body.appendChild(overlay);
+    root.style.overflow = 'hidden';
+    const bar = $('.bar', overlay);
+    overlay.addEventListener('scroll', () => {
+      const max = overlay.scrollHeight - overlay.clientHeight;
+      bar.style.transform = `scaleX(${max > 0 ? overlay.scrollTop / max : 0})`;
+      update(); show();
+    }, { passive: true });
+    $('.x', overlay).onclick = closeReader;
+    book.classList.add('on');
+    book.setAttribute('aria-pressed', 'true');
+    book.title = tr().exit;
+    requestAnimationFrame(() => requestAnimationFrame(() => overlay && overlay.classList.add('in')));
+    overlay.focus({ preventScroll: true });
+    update();
+  }
+  function closeReader() {
+    if (!overlay) return;
+    const o = overlay;
+    overlay = null;
+    root.style.overflow = '';
+    o.classList.remove('in');
+    setTimeout(() => o.remove(), reduce() ? 0 : 350);
+    book.classList.remove('on');
+    book.setAttribute('aria-pressed', 'false');
+    book.title = tr().reader;
+    update();
+  }
+  book.onclick = () => (overlay ? closeReader() : openReader());
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay) closeReader(); });
+
+  /* ---------- 夜间模式演示：底色 + 亮度 ---------- */
+  const SW = ['#22242a', '#1a1f2b', '#2a2622', '#1d2624', '#000000'];
+  let swIndex = 0;
+  const preview = $('#preview'), swatches = $('#swatches');
+  SW.forEach((hex, i) => {
+    const b = document.createElement('button');
+    b.className = 'sw';
+    b.type = 'button';
+    b.style.background = hex;
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', String(i === 0));
+    b.onclick = () => {
+      swIndex = i;
+      swatches.querySelectorAll('.sw').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+      preview.style.background = hex;
+      $('#swName').textContent = tr().swatches[i];
+    };
+    swatches.appendChild(b);
+  });
+  $('#bright').oninput = (e) => {
+    const v = +e.target.value;
+    $('#brightVal').textContent = v + '%';
+    preview.style.filter = v === 100 ? '' : `brightness(${v / 100})`;
+  };
+
+  /* ---------- 阅读模式演示：排版 + 朗读 ---------- */
+  const rdPage = $('#rdPage'), panel = $('#rdPanel'), aa = $('#aa');
+  let fs = 17;
+  aa.onclick = () => {
+    panel.hidden = !panel.hidden;
+    aa.classList.toggle('on', !panel.hidden);
+    aa.setAttribute('aria-expanded', String(!panel.hidden));
+  };
+  panel.onclick = (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.fs) { fs = Math.min(22, Math.max(14, fs + +b.dataset.fs)); rdPage.style.setProperty('--rs', fs + 'px'); }
+    if (b.dataset.w) {
+      rdPage.style.setProperty('--rw', b.dataset.w);
+      b.parentElement.querySelectorAll('button').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+    }
+    if (b.dataset.f) {
+      rdPage.style.setProperty('--rf', b.dataset.f === 'serif' ? 'var(--display)' : 'var(--body)');
+      b.parentElement.querySelectorAll('button').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+    }
+  };
+
+  const play = $('#play'), note = $('#voiceNote');
+  const paras = () => [...document.querySelectorAll(`#rdBody p.${lang}`)];
+  const synth = window.speechSynthesis;
+  const PLAY = '<path fill="currentColor" d="M8 5.8v12.4a.8.8 0 0 0 1.2.7l10-6.2a.8.8 0 0 0 0-1.4l-10-6.2A.8.8 0 0 0 8 5.8z"/>';
+  const PAUSE = '<rect fill="currentColor" x="7" y="5.5" width="3.6" height="13" rx="1"/><rect fill="currentColor" x="13.4" y="5.5" width="3.6" height="13" rx="1"/>';
+  let playing = false, idx = 0, fallback = 0, current = null;
+  function mark(i) { document.querySelectorAll('#rdBody p').forEach((p) => p.classList.remove('speaking')); const p = paras()[i]; if (p) p.classList.add('speaking'); }
+  function setPlaying(on) {
+    playing = on;
+    $('#playIcon').innerHTML = on ? PAUSE : PLAY;
+    play.classList.toggle('on', on);
+    play.setAttribute('aria-label', on ? tr().pause : tr().play);
+    play.title = play.getAttribute('aria-label');
+    if (!on) { clearTimeout(fallback); mark(-1); }
+  }
+  function pickVoice() {
+    const re = new RegExp('^' + tr().voiceLang, 'i');
+    const vs = synth ? synth.getVoices().filter((v) => re.test(v.lang)) : [];
+    const good = /婷婷|Tingting|Xiaoxiao|晓晓|Huihui|慧慧|Yunxi|云希|Lili|莉莉|Samantha|Alex|Daniel|Karen|Aria|Jenny|Guy|Zira|David/i;
+    const odd = /Eddy|Flo|Grandma|Grandpa|Reed|Rocko|Sandy|Shelley|Bahh|Bells|Boing|Bubbles|Cellos|Wobble|Whisper|Zarvox|Trinoids|Jester|Organ|Superstar|Bad News|Good News|Albert|Fred|Junior|Kathy|Ralph/i;
+    const score = (v) => (good.test(v.name) ? 4 : 0) - (odd.test(v.name) ? 4 : 0) + (v.localService ? 2 : 0) + (/en-US/i.test(v.lang) ? 1 : 0);
+    return vs.sort((a, b) => score(b) - score(a))[0] || null;
+  }
+  function silentStep() {   // 没有可用语音时，只演示高亮
+    if (!playing) return;
+    if (idx >= paras().length) { setPlaying(false); idx = 0; return; }
+    mark(idx);
+    fallback = setTimeout(() => { idx++; silentStep(); }, 2200);
+  }
+  function speak() {
+    if (!playing) return;
+    const list = paras();
+    if (idx >= list.length) { setPlaying(false); idx = 0; return; }
+    mark(idx);
+    const u = new SpeechSynthesisUtterance(list[idx].textContent);
+    u.lang = tr().ttsLang;
+    const v = pickVoice();
+    if (v) u.voice = v;
+    u.onend = () => { if (u === current) { idx++; speak(); } };
+    u.onerror = () => { if (u === current && playing) { note.textContent = tr().mute; silentStep(); } };
+    current = u;
+    synth.speak(u);
+  }
+  function stopSpeech() { current = null; if (synth) synth.cancel(); setPlaying(false); }
+  play.onclick = () => {
+    if (playing) { stopSpeech(); return; }
+    if (idx >= paras().length) idx = 0;
+    setPlaying(true);
+    const v = synth && pickVoice();
+    if (synth && v) {
+      note.textContent = tr().speaking(v.name.replace(/\s*\(.*\)$/, ''));
+      synth.cancel();
+      setTimeout(speak, 60);
+    } else {
+      note.textContent = tr().noVoice;
+      silentStep();
+    }
+  };
+  document.querySelectorAll('#rdBody p').forEach((p) => p.addEventListener('click', () => {
+    if (!playing) return;
+    const k = paras().indexOf(p);
+    if (k < 0) return;
+    current = null; if (synth) synth.cancel(); clearTimeout(fallback);
+    idx = k;
+    setTimeout(() => (synth && pickVoice() ? speak() : silentStep()), 60);
+  }));
+  if (synth) synth.getVoices();
+
+  /* ---------- 复制 ---------- */
+  document.querySelectorAll('.copy-btn').forEach((btn) => {
+    btn.onclick = async () => {
+      const el = document.getElementById(btn.dataset.target);
+      try { await navigator.clipboard.writeText(el.textContent); btn.textContent = tr().copied; }
+      catch { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = tr().selected; }
+      setTimeout(() => { btn.textContent = tr().copy; }, 1600);
+    };
+  });
+
+  /* ---------- 切换语言：更新所有由脚本写的文字 ---------- */
+  function setLang(l, save) {
+    lang = l;
+    root.lang = l === 'zh' ? 'zh-CN' : 'en';
+    if (l === 'en') root.setAttribute('lang', 'en');
+    document.title = tr().title;
+    document.querySelectorAll('.lang button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
+    for (const [el, k] of [[up, 'top'], [down, 'bottom'], [themeBtn, 'theme']]) { el.title = tr()[k]; el.setAttribute('aria-label', tr()[k]); }
+    book.title = overlay ? tr().exit : tr().reader;
+    book.setAttribute('aria-label', tr().reader);
+    aa.title = tr().typo;
+    aa.setAttribute('aria-label', tr().typo);
+    swatches.querySelectorAll('.sw').forEach((b, i) => { b.title = tr().swatches[i]; b.setAttribute('aria-label', tr().swatches[i]); });
+    $('#swName').textContent = tr().swatches[swIndex];
+    document.querySelectorAll('.copy-btn').forEach((b) => { b.textContent = tr().copy; });
+    if (playing) stopSpeech();
+    idx = 0;
+    note.textContent = '';
+    setPlaying(false);
+    if (overlay) { closeReader(); }
+    if (save) { try { localStorage.setItem('glide-site-lang', l); } catch {} }
+  }
+  document.querySelectorAll('.lang button').forEach((b) => { b.onclick = () => setLang(b.dataset.lang, true); });
+  setLang(detectLang(), false);
+})();
+</script>
+</body>
+</html>
