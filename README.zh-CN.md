@@ -1,6 +1,6 @@
 # Glide
 
-[English](README.md) | 简体中文
+[English](README.md) | 简体中文 · **[官网](https://calabli.github.io/glide/)** · [下载](https://github.com/calabli/glide/releases/latest)
 
 一个安静的浏览器扩展。网页右下角一枚小小的毛玻璃胶囊：**回到顶部 · 明暗切换 · 阅读模式 · 到底部**。平时完全看不见，滚动或把鼠标移过去时才淡入。
 
