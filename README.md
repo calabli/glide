@@ -1,59 +1,65 @@
 # Glide
 
-右下角一个小小的毛玻璃胶囊：回到顶部 · 明暗切换 · 阅读模式 · 到底部。外加夜间模式和阅读模式。
+English | [简体中文](README.zh-CN.md)
 
-## 悬浮按钮
-- 位置可选：右下（默认）、左下、右侧中间、左侧中间（在设置面板里改）
-- 平时完全隐藏；滚动时或鼠标移到右下角时淡入，停下约 1.4 秒后淡出
-- 已在顶部时隐藏 ↑，已在底部时隐藏 ↓
-- 支持在内部滚动的网页应用；阅读模式打开时，滚动的是阅读页
-- 全屏看视频和打印时自动隐藏
+A quiet browser extension. A small frosted-glass pill sits in the corner of every page: **back to top · light/dark · reading mode · to bottom**. It stays invisible until you scroll or move the mouse toward it.
 
-## 夜间模式
-- 切换时从按钮处圆形展开
-- **自动开启**（三选一）：
-  - 跟随系统：macOS 或 Windows 切到深色时，没手动设置过的网站自动开启
-  - 定时：例如 19:00–07:00，可跨午夜；到点自动切换，电脑睡眠醒来也会立刻检查
-  - 关闭：只在你手动打开的网站使用
-- **自动跳过深色网站**：网页本身已经是深色的，不会再被反色
-- 手动切换后会记住这个网站；切回和"跟随系统"一致的状态时，自动恢复跟随
-- 图片和视频保持原色
+Glide asks for one permission, `storage`, to remember your settings. It makes no network requests and collects no data.
 
-> Windows：设置 → 个性化 → 颜色 → 选择默认应用模式「深色」。
-> Chrome 的「设置 → 外观 → 模式」需要保持「设备」（跟随系统）。
+> The extension's interface (settings panel, tooltips, reading view) is currently in Simplified Chinese.
 
-## 设置面板（点工具栏上的 Glide 图标）
-- 本网站夜间模式开关，可一键「恢复跟随系统」
-- 本网站不自动开启：反色效果不理想的网站，跟随系统时跳过（仍可手动开启）
-- 本网站夜间亮度：60%–140%，只影响这个网站；点数值可重置
-- 自动开启：跟随系统 / 定时（设置开始、结束时间）/ 关闭
-- 按钮位置：右下、左下、右侧中间、左侧中间
-- 夜间底色：石墨 #22242a（默认）、夜蓝、暖棕、墨绿、纯黑
-- 文字亮度滑块，带实时预览
+## The floating pill
+- Four positions: bottom right (default), bottom left, right edge middle, left edge middle (set in the settings panel)
+- Hidden by default; fades in while you scroll or when the mouse comes near, and fades out about 1.4 s after you stop
+- ↑ hides when you're already at the top, ↓ hides at the bottom
+- Works with web apps that scroll inside a container; in reading mode it scrolls the reading view
+- Hides itself in fullscreen video and when printing
 
-## 阅读模式
-- 自动找出正文，去掉导航、侧栏、评论、分享、广告
-- 舒适的字号和行宽，顶部有阅读进度条，显示预计阅读时间
-- 点右下角的书本按钮进入，打开时按钮高亮；再点一次、按 Esc 或右上角 × 退出
-- **排版（右上角 Aa）**：字号、行宽（窄 / 中 / 宽）、字体（黑体 / 宋体）、朗读语速，全局记住
-- **朗读（右上角 ▶）**：用系统自带语音逐段朗读，当前段落高亮并自动滚动；
-  从屏幕上看到的第一段开始读，朗读中点任意段落可跳过去；
-  优先使用本机语音（macOS「婷婷」、Windows「晓晓 / 慧慧」），不用联网
+## Dark mode
+- Switching expands as a circle from the button you clicked
+- A soft dark gray background (#22242a by default) instead of pure black; images and videos keep their real colors
+- **Auto-enable** (pick one):
+  - Follow system: turns on for sites you haven't set manually when macOS or Windows switches to dark
+  - Schedule: e.g. 19:00–07:00, can cross midnight; switches on time and re-checks right after the computer wakes
+  - Off: dark mode only on sites where you turn it on yourself
+- **Skips dark sites**: pages that are already dark are never inverted
+- Remembers manual choices per site; switching back to whatever the auto rule would pick returns the site to auto
 
-## 安装（Chrome / Edge / Arc）
-1. 地址栏打开 `chrome://extensions`（Edge 为 `edge://extensions`）
-2. 打开右上角「开发者模式」
-3. 点「加载已解压的扩展程序」，选择 `glide` 文件夹
+> Windows: Settings → Personalization → Colors → Choose your default app mode → Dark.
+> In Chrome, Settings → Appearance → Mode should stay on "Device".
 
-更新代码后，在扩展页点 Glide 卡片上的刷新 ↻，再刷新网页。
+## Settings panel (click the Glide icon in the toolbar)
+- Dark mode for this site, with one click to return it to auto
+- Don't auto-enable on this site: for sites that don't invert well (you can still turn it on by hand)
+- Dark-mode brightness for this site: 60%–140%, affects only this site; click the value to reset
+- Auto-enable: follow system / schedule (start and end time) / off
+- Background color: Graphite (default), Night Blue, Warm Brown, Ink Green, Pure Black; text brightness slider with live preview
+- Pill position: bottom right, bottom left, right middle, left middle
 
-## 快捷键
+## Reading mode
+- Finds the article text and drops navigation, sidebars, comments, share buttons and ads
+- Comfortable type size and line length, a reading progress bar, and an estimated reading time
+- Open it with the book button on the pill (it stays highlighted while open); close with the same button, Esc, or the × in the top-right corner
+- **Typography (Aa, top right)**: font size, line width (narrow / medium / wide), sans or serif, read-aloud speed; remembered for all sites
+- **Read aloud (▶, top right)**: reads paragraph by paragraph with your system's built-in voices, highlighting and scrolling to the current paragraph.
+  Starts from the first paragraph on screen; click any paragraph while it's reading to jump there.
+  Prefers on-device voices (macOS "Tingting", Windows "Xiaoxiao / Huihui"), so no network is needed
 
-| 操作 | macOS | Windows |
+## Install (Chrome / Edge / Arc)
+1. Get the code: `git clone https://github.com/calabli/glide.git`, or on GitHub click **Code → Download ZIP** and unzip it
+2. Open `chrome://extensions` (in Edge, `edge://extensions`)
+3. Turn on **Developer mode** in the top-right corner
+4. Click **Load unpacked** and choose the `glide` folder
+
+After updating the code, click the reload ↻ button on Glide's card on the extensions page, then refresh the web page.
+
+## Keyboard shortcuts
+
+| Action | macOS | Windows |
 | --- | --- | --- |
-| 回到顶部 | ⌥⇧↑ | Alt+Shift+↑ |
-| 到底部 | ⌥⇧↓ | Alt+Shift+↓ |
-| 切换明暗 | ⌥⇧L | Alt+Shift+L |
-| 阅读模式 | ⌥⇧R | Alt+Shift+R |
+| Back to top | ⌥⇧↑ | Alt+Shift+↑ |
+| To bottom | ⌥⇧↓ | Alt+Shift+↓ |
+| Light / dark | ⌥⇧L | Alt+Shift+L |
+| Reading mode | ⌥⇧R | Alt+Shift+R |
 
-快捷键可以在 `chrome://extensions/shortcuts` 里修改。
+Change them at `chrome://extensions/shortcuts`.
