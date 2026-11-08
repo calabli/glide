@@ -1,0 +1,225 @@
+{
+  "extName": {
+    "message": "Glide"
+  },
+  "extDesc": {
+    "message": "Quiet, elegant back to top, dark mode and reading mode."
+  },
+  "cmdTop": {
+    "message": "Back to top"
+  },
+  "cmdBottom": {
+    "message": "To bottom"
+  },
+  "cmdTheme": {
+    "message": "Toggle light / dark"
+  },
+  "cmdReader": {
+    "message": "Reading mode"
+  },
+  "dockTop": {
+    "message": "Back to top"
+  },
+  "dockBottom": {
+    "message": "To bottom"
+  },
+  "dockTheme": {
+    "message": "Light / dark"
+  },
+  "dockReader": {
+    "message": "Reading mode"
+  },
+  "readerExit": {
+    "message": "Exit reading mode"
+  },
+  "noArticle": {
+    "message": "Couldn't find an article on this page"
+  },
+  "readTime": {
+    "message": "$N$ min read",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "rdTypography": {
+    "message": "Typography"
+  },
+  "rdTypographySettings": {
+    "message": "Typography settings"
+  },
+  "rdReadAloud": {
+    "message": "Read aloud"
+  },
+  "rdPause": {
+    "message": "Pause reading"
+  },
+  "rdSize": {
+    "message": "Size"
+  },
+  "rdSmaller": {
+    "message": "Smaller text"
+  },
+  "rdLarger": {
+    "message": "Larger text"
+  },
+  "rdWidth": {
+    "message": "Width"
+  },
+  "rdNarrow": {
+    "message": "Narrow"
+  },
+  "rdMedium": {
+    "message": "Medium"
+  },
+  "rdWide": {
+    "message": "Wide"
+  },
+  "rdFont": {
+    "message": "Font"
+  },
+  "rdSans": {
+    "message": "Sans"
+  },
+  "rdSerif": {
+    "message": "Serif"
+  },
+  "rdSpeed": {
+    "message": "Speed"
+  },
+  "rdSlow": {
+    "message": "Slow"
+  },
+  "pUnsupported": {
+    "message": "Glide can't run on this page (browser pages and the extension store)."
+  },
+  "pLocalFile": {
+    "message": "Local file"
+  },
+  "pSiteDark": {
+    "message": "Dark mode on this site"
+  },
+  "pManual": {
+    "message": "Set manually"
+  },
+  "pReturnAuto": {
+    "message": "Return to auto"
+  },
+  "pNativeDark": {
+    "message": "Page is already dark, skipped"
+  },
+  "pNever": {
+    "message": "Don't auto-enable here"
+  },
+  "pNeverNote": {
+    "message": "For sites that don't invert well"
+  },
+  "pBright": {
+    "message": "Dark brightness here"
+  },
+  "pReset": {
+    "message": "Reset"
+  },
+  "pAuto": {
+    "message": "Auto-enable"
+  },
+  "pAutoAria": {
+    "message": "Turn on dark mode automatically"
+  },
+  "pModeSystem": {
+    "message": "System"
+  },
+  "pModeSchedule": {
+    "message": "Schedule"
+  },
+  "pModeOff": {
+    "message": "Off"
+  },
+  "pFollowing": {
+    "message": "Follows system"
+  },
+  "pScheduled": {
+    "message": "Scheduled $FROM$–$TO$",
+    "placeholders": {
+      "from": {
+        "content": "$1"
+      },
+      "to": {
+        "content": "$2"
+      }
+    }
+  },
+  "pAutoOff": {
+    "message": "Auto-enable is off"
+  },
+  "pFrom": {
+    "message": "From"
+  },
+  "pTo": {
+    "message": "to"
+  },
+  "pNextDay": {
+    "message": "next day"
+  },
+  "pSameTime": {
+    "message": "Start and end can't match"
+  },
+  "pModeNoteSystem": {
+    "message": "Turns on for light sites when macOS / Windows goes dark"
+  },
+  "pModeNoteOff": {
+    "message": "Dark mode only on sites where you turn it on"
+  },
+  "pBackground": {
+    "message": "Background"
+  },
+  "pText": {
+    "message": "Text"
+  },
+  "pTextAria": {
+    "message": "Text brightness"
+  },
+  "pPreview": {
+    "message": "Preview"
+  },
+  "pPreviewText": {
+    "message": "Body text in dark mode"
+  },
+  "pPosition": {
+    "message": "Pill position"
+  },
+  "posBL": {
+    "message": "Bottom left"
+  },
+  "posLM": {
+    "message": "Left middle"
+  },
+  "posRM": {
+    "message": "Right middle"
+  },
+  "posBR": {
+    "message": "Bottom right"
+  },
+  "pReaderOpen": {
+    "message": "Open reading mode"
+  },
+  "pReaderClose": {
+    "message": "Exit reading mode"
+  },
+  "swGraphite": {
+    "message": "Graphite"
+  },
+  "swNight": {
+    "message": "Night Blue"
+  },
+  "swWarm": {
+    "message": "Warm Brown"
+  },
+  "swGreen": {
+    "message": "Ink Green"
+  },
+  "swBlack": {
+    "message": "Pure Black"
+  }
+}

@@ -1,9 +1,18 @@
+// 界面文字：按浏览器语言读取 _locales（中文浏览器显示中文，其他显示英文）
+const L = (k, subs) => { try { return chrome.i18n.getMessage(k, subs) || k; } catch { return k; } };
+const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+document.documentElement.lang = (() => { try { return chrome.i18n.getUILanguage(); } catch { return 'en'; } })();
+document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = L(el.dataset.i18n); });
+document.querySelectorAll('[data-i18n-aria]').forEach((el) => el.setAttribute('aria-label', L(el.dataset.i18nAria)));
+document.querySelectorAll('[data-i18n-title]').forEach((el) => { el.title = L(el.dataset.i18nTitle); el.setAttribute('aria-label', el.title); });
+document.getElementById('readerKey').textContent = IS_MAC ? '⌥⇧R' : 'Alt+Shift+R';
+
 const PRESETS = [
-  { name: '石墨', bg: '#22242a' },
-  { name: '夜蓝', bg: '#1a1f2b' },
-  { name: '暖棕', bg: '#2a2622' },
-  { name: '墨绿', bg: '#1d2624' },
-  { name: '纯黑', bg: '#000000' },
+  { name: L('swGraphite'), bg: '#22242a' },
+  { name: L('swNight'), bg: '#1a1f2b' },
+  { name: L('swWarm'), bg: '#2a2622' },
+  { name: L('swGreen'), bg: '#1d2624' },
+  { name: L('swBlack'), bg: '#000000' },
 ];
 const DEFAULT = { bg: '#22242a', text: 0.93 };
 
@@ -21,18 +30,22 @@ async function ask(cmd, extra = {}) {
 
 function render(st) {
   if (!st) { document.body.classList.add('na'); return; }
-  $('host').textContent = st.host || '本地文件';
+  $('host').textContent = st.host || L('pLocalFile');
   $('siteDark').checked = st.dark;
   const note = $('siteNote');
   if (st.manual) {
-    note.innerHTML = '手动设置 · <a id="reset">恢复跟随系统</a>';
+    note.textContent = L('pManual') + ' · ';
+    const a = document.createElement('a');
+    a.id = 'reset';
+    a.textContent = L('pReturnAuto');
+    note.appendChild(a);
     $('reset').onclick = async () => render(await ask('reset-site'));
   } else if (st.nativeDark) {
-    note.textContent = '网页本身是深色，已自动跳过';
+    note.textContent = L('pNativeDark');
   } else {
     note.textContent = autoLabel();
   }
-  $('readerLabel').textContent = st.reader ? '退出阅读模式' : '进入阅读模式';
+  $('readerLabel').textContent = st.reader ? L('pReaderClose') : L('pReaderOpen');
   const t = st.tune || { brightness: 1, never: false };
   $('never').checked = !!t.never;
   if (!tuneTimer) $('bright').value = Math.round(t.brightness * 100);   // 正在拖动时不要把滑块弹回去
@@ -74,7 +87,7 @@ $('text').oninput = (e) => { palette.text = e.target.value / 100; savePalette();
 /* ---------- 按网站微调 ---------- */
 function paintBright() {
   const v = +$('bright').value;
-  $('brightVal').textContent = v === 100 ? '100%' : `${v}% · 重置`;
+  $('brightVal').textContent = v === 100 ? '100%' : `${v}% · ${L('pReset')}`;
 }
 let tuneTimer = 0;
 $('bright').oninput = () => {
@@ -100,9 +113,9 @@ let mode = 'system';
 let sched = { from: '19:00', to: '07:00' };
 let pos = 'br';
 function autoLabel() {
-  if (mode === 'schedule') return `定时 ${sched.from}–${sched.to}`;
-  if (mode === 'off') return '自动开启已关闭';
-  return '跟随系统';
+  if (mode === 'schedule') return L('pScheduled', [sched.from, sched.to]);
+  if (mode === 'off') return L('pAutoOff');
+  return L('pFollowing');
 }
 function paintMode() {
   for (const b of $('mode').children) b.setAttribute('aria-checked', String(b.dataset.mode === mode));
@@ -110,10 +123,10 @@ function paintMode() {
   $('from').value = sched.from;
   $('to').value = sched.to;
   const toMin = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
-  $('overnight').textContent = toMin(sched.from) > toMin(sched.to) ? '次日' : toMin(sched.from) === toMin(sched.to) ? '时间不能相同' : '';
+  $('overnight').textContent = toMin(sched.from) > toMin(sched.to) ? L('pNextDay') : toMin(sched.from) === toMin(sched.to) ? L('pSameTime') : '';
   $('modeNote').textContent =
-    mode === 'system' ? 'macOS / Windows 切到深色时，为浅色网站开启' :
-    mode === 'schedule' ? '' : '只在你手动打开的网站使用夜间模式';
+    mode === 'system' ? L('pModeNoteSystem') :
+    mode === 'schedule' ? '' : L('pModeNoteOff');
   $('modeNote').style.display = mode === 'schedule' ? 'none' : '';
 }
 async function refreshSite() { setTimeout(async () => render(await ask('state')), 90); }

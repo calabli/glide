@@ -1,23 +1,66 @@
 {
   "manifest_version": 3,
-  "name": "Glide",
-  "version": "1.1.0",
-  "description": "安静、优雅的回到顶部 / 到底部、夜间模式与阅读模式。",
-  "permissions": ["storage"],
-  "background": { "service_worker": "background.js" },
-  "action": {
-    "default_title": "Glide",
-    "default_popup": "popup.html",
-    "default_icon": { "16": "icons/16.png", "32": "icons/32.png", "48": "icons/48.png" }
+  "name": "__MSG_extName__",
+  "version": "1.2.0",
+  "description": "__MSG_extDesc__",
+  "permissions": [
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js"
   },
-  "icons": { "16": "icons/16.png", "32": "icons/32.png", "48": "icons/48.png", "128": "icons/128.png" },
+  "action": {
+    "default_title": "__MSG_extName__",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png",
+      "48": "icons/48.png"
+    }
+  },
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
   "content_scripts": [
-    { "matches": ["<all_urls>"], "js": ["reader.js", "content.js"], "run_at": "document_start" }
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "reader.js",
+        "content.js"
+      ],
+      "run_at": "document_start"
+    }
   ],
   "commands": {
-    "to-top":       { "suggested_key": { "default": "Alt+Shift+Up" },   "description": "回到顶部" },
-    "to-bottom":    { "suggested_key": { "default": "Alt+Shift+Down" }, "description": "到底部" },
-    "toggle-theme": { "suggested_key": { "default": "Alt+Shift+L" },    "description": "切换明暗" },
-    "reader":       { "suggested_key": { "default": "Alt+Shift+R" },    "description": "阅读模式" }
-  }
+    "to-top": {
+      "suggested_key": {
+        "default": "Alt+Shift+Up"
+      },
+      "description": "__MSG_cmdTop__"
+    },
+    "to-bottom": {
+      "suggested_key": {
+        "default": "Alt+Shift+Down"
+      },
+      "description": "__MSG_cmdBottom__"
+    },
+    "toggle-theme": {
+      "suggested_key": {
+        "default": "Alt+Shift+L"
+      },
+      "description": "__MSG_cmdTheme__"
+    },
+    "reader": {
+      "suggested_key": {
+        "default": "Alt+Shift+R"
+      },
+      "description": "__MSG_cmdReader__"
+    }
+  },
+  "default_locale": "en"
 }

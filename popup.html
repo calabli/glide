@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh">
+<html>
 <head>
 <meta charset="utf-8">
 <title>Glide</title>
@@ -51,6 +51,7 @@
   .times input:focus-visible{box-shadow:0 0 0 2px var(--accent)}
   .times .dash{color:var(--sub)}
   .times .overnight{margin:0 0 0 2px}
+  :lang(en) .from-word{display:none}   /* 英文里 "19:00 to 07:00" 已经够清楚 */
   .mode-note{padding:0 0 4px}
 
   /* 开关 */
@@ -78,7 +79,7 @@
     box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 0 0 1px var(--line);transition:background .3s,color .3s}
   .preview b{font-size:12.5px;margin-right:4px}
   .text-row{margin-top:10px}
-  .inline-label{color:var(--sub);font-size:11.5px;width:28px;flex:none}
+  .inline-label{color:var(--sub);font-size:11.5px;min-width:28px;flex:none}
 
   /* 滑块 */
   .slider{display:flex;align-items:center;gap:10px}
@@ -114,26 +115,26 @@
   </header>
 
   <section>
-    <p class="unsupported">此页面不支持（浏览器内置页面或扩展商店）。</p>
+    <p class="unsupported" data-i18n="pUnsupported"></p>
     <div class="row site">
       <div class="l">
-        <span>本网站夜间模式</span>
-        <span class="note" id="siteNote">跟随系统</span>
+        <span data-i18n="pSiteDark"></span>
+        <span class="note" id="siteNote"></span>
       </div>
       <label class="sw"><input type="checkbox" id="siteDark"><span></span></label>
     </div>
     <div class="row site">
       <div class="l">
-        <span>本网站不自动开启</span>
-        <span class="note">反色效果不理想的网站，自动开启时跳过</span>
+        <span data-i18n="pNever"></span>
+        <span class="note" data-i18n="pNeverNote"></span>
       </div>
       <label class="sw"><input type="checkbox" id="never"><span></span></label>
     </div>
     <div class="site tune">
-      <div class="tune-head"><span>本网站夜间亮度</span><span class="tune-val" id="brightVal">100%</span></div>
+      <div class="tune-head"><span data-i18n="pBright"></span><span class="tune-val" id="brightVal">100%</span></div>
       <div class="slider">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/></svg>
-        <input type="range" id="bright" min="60" max="140" step="5" aria-label="本网站夜间亮度">
+        <input type="range" id="bright" min="60" max="140" step="5" data-i18n-aria="pBright">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/></svg>
       </div>
     </div>
@@ -141,45 +142,44 @@
 
   <section>
     <div class="row">
-      <span>自动开启</span>
-      <div class="seg" id="mode" role="radiogroup" aria-label="自动开启夜间模式">
-        <button role="radio" data-mode="system">跟随系统</button>
-        <button role="radio" data-mode="schedule">定时</button>
-        <button role="radio" data-mode="off">关闭</button>
+      <span data-i18n="pAuto"></span>
+      <div class="seg" id="mode" role="radiogroup" data-i18n-aria="pAutoAria">
+        <button role="radio" data-mode="system" data-i18n="pModeSystem"></button>
+        <button role="radio" data-mode="schedule" data-i18n="pModeSchedule"></button>
+        <button role="radio" data-mode="off" data-i18n="pModeOff"></button>
       </div>
     </div>
     <div class="times" id="times">
-      <label>从 <input type="time" id="from" required></label>
-      <span class="dash">—</span>
-      <label>到 <input type="time" id="to" required></label>
+      <label><span class="from-word" data-i18n="pFrom"></span> <input type="time" id="from" required></label>
+      <label><span data-i18n="pTo"></span> <input type="time" id="to" required></label>
       <span class="note overnight" id="overnight"></span>
     </div>
     <p class="note mode-note" id="modeNote"></p>
   </section>
 
   <section>
-    <p class="label">夜间底色</p>
-    <div class="swatches" id="swatches" role="radiogroup" aria-label="夜间底色"></div>
+    <p class="label" data-i18n="pBackground"></p>
+    <div class="swatches" id="swatches" role="radiogroup" data-i18n-aria="pBackground"></div>
     <div class="slider text-row">
-      <span class="inline-label">文字</span>
+      <span class="inline-label" data-i18n="pText"></span>
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/></svg>
-      <input type="range" id="text" min="60" max="100" step="1" aria-label="文字亮度">
+      <input type="range" id="text" min="60" max="100" step="1" data-i18n-aria="pTextAria">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/></svg>
     </div>
-    <div class="preview" id="preview"><b>预览</b> 正文文字在夜间模式下的样子</div>
+    <div class="preview" id="preview"><b data-i18n="pPreview"></b> <span data-i18n="pPreviewText"></span></div>
   </section>
 
   <section>
     <div class="row">
-      <span>按钮位置</span>
-      <div class="seg pos" id="pos" role="radiogroup" aria-label="按钮位置">
-        <button role="radio" data-pos="bl" title="左下"><i class="dot" style="left:3px;bottom:3px"></i></button>
-        <button role="radio" data-pos="lm" title="左侧中间"><i class="dot" style="left:3px;top:5px"></i></button>
-        <button role="radio" data-pos="rm" title="右侧中间"><i class="dot" style="right:3px;top:5px"></i></button>
-        <button role="radio" data-pos="br" title="右下"><i class="dot" style="right:3px;bottom:3px"></i></button>
+      <span data-i18n="pPosition"></span>
+      <div class="seg pos" id="pos" role="radiogroup" data-i18n-aria="pPosition">
+        <button role="radio" data-pos="bl" data-i18n-title="posBL"><i class="dot" style="left:3px;bottom:3px"></i></button>
+        <button role="radio" data-pos="lm" data-i18n-title="posLM"><i class="dot" style="left:3px;top:5px"></i></button>
+        <button role="radio" data-pos="rm" data-i18n-title="posRM"><i class="dot" style="right:3px;top:5px"></i></button>
+        <button role="radio" data-pos="br" data-i18n-title="posBR"><i class="dot" style="right:3px;bottom:3px"></i></button>
       </div>
     </div>
-    <button class="btn site" id="reader"><span id="readerLabel">进入阅读模式</span><span class="k">⌥⇧R</span></button>
+    <button class="btn site" id="reader"><span id="readerLabel" data-i18n="pReaderOpen"></span><span class="k" id="readerKey"></span></button>
   </section>
 
   <script src="popup.js"></script>

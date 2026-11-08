@@ -3,6 +3,11 @@
   window.__glide = true;
 
   const root = document.documentElement;
+  // 界面文字：按浏览器语言读取 _locales（中文浏览器显示中文，其他显示英文）
+  const L = (k, subs) => { try { return chrome.i18n.getMessage(k, subs) || k; } catch { return k; } };
+  const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+  const keys = (k) => (IS_MAC ? '⌥⇧' + k : 'Alt+Shift+' + k);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const KEY = 'site:' + (location.hostname || location.protocol);
   // 整页只用浏览器原生、GPU 加速的滤镜（不用 SVG 滤镜，避免标签页崩溃）
   const FILTER = 'invert(1) hue-rotate(180deg)';
@@ -225,13 +230,13 @@
         @media (prefers-reduced-motion: reduce){*{transition-duration:.01s!important}}
       </style>
       <div class="dock" part="dock">
-        <button class="up" title="回到顶部" aria-label="回到顶部">${I_UP}</button>
-        <button class="theme" title="切换明暗" aria-label="切换明暗">
+        <button class="up" title="${esc(L('dockTop'))} (${keys('↑')})" aria-label="${esc(L('dockTop'))}">${I_UP}</button>
+        <button class="theme" title="${esc(L('dockTheme'))} (${keys('L')})" aria-label="${esc(L('dockTheme'))}">
           ${I_MOON.replace('<svg', '<svg class="moon"')}
           ${I_SUN.replace('<svg', '<svg class="sun"')}
         </button>
-        <button class="reader" title="阅读模式 (⌥⇧R)" aria-label="阅读模式" aria-pressed="false">${I_BOOK}</button>
-        <button class="down" title="到底部" aria-label="到底部">${I_DOWN}</button>
+        <button class="reader" title="${esc(L('dockReader'))} (${keys('R')})" aria-label="${esc(L('dockReader'))}" aria-pressed="false">${I_BOOK}</button>
+        <button class="down" title="${esc(L('dockBottom'))} (${keys('↓')})" aria-label="${esc(L('dockBottom'))}">${I_DOWN}</button>
       </div>`;
     dock = shadow.querySelector('.dock');
     btnUp = shadow.querySelector('.up');
@@ -363,7 +368,7 @@
     const on = !!(window.__glideReader && window.__glideReader.isOpen());
     btnReader.classList.toggle('active', on);
     btnReader.setAttribute('aria-pressed', String(on));
-    btnReader.title = on ? '退出阅读模式 (Esc)' : '阅读模式 (⌥⇧R)';
+    btnReader.title = on ? `${L('readerExit')} (Esc)` : `${L('dockReader')} (${keys('R')})`;
     update();
   });
   document.addEventListener('fullscreenchange', () => show());

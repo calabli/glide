@@ -6,7 +6,7 @@ A quiet browser extension. A small frosted-glass pill sits in the corner of ever
 
 Glide asks for one permission, `storage`, to remember your settings. It makes no network requests and collects no data.
 
-> The extension's interface (settings panel, tooltips, reading view) is currently in Simplified Chinese.
+> The interface is available in English and Simplified Chinese and follows your browser's language.
 
 ## The floating pill
 - Four positions: bottom right (default), bottom left, right edge middle, left edge middle (set in the settings panel)

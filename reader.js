@@ -1,6 +1,11 @@
 /* Glide 阅读模式：找出正文，用干净的排版单独展示 */
 (() => {
   if (window.top !== window || window.__glideReader) return;
+  // 界面文字：按浏览器语言读取 _locales（中文浏览器显示中文，其他显示英文）
+  const L = (k, subs) => { try { return chrome.i18n.getMessage(k, subs) || k; } catch { return k; } };
+  const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+  const keys = (k) => (IS_MAC ? '⌥⇧' + k : 'Alt+Shift+' + k);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   const NEG = /comment|footer|footnote|sidebar|side-?bar|aside|nav|menu|share|social|related|recommend|advert|\bads?\b|ad-|promo|sponsor|popup|modal|cookie|subscribe|login|signin|breadcrumb|toolbar|widget|banner|rank|hot-?list|copyright/i;
   const POS = /article|content|post|entry|main|body|text|story|topic|markdown|prose|detail/i;
@@ -226,7 +231,7 @@
 
   function open() {
     const main = findMain();
-    if (!main) { toast('这个页面没有找到正文'); return; }
+    if (!main) { toast(L('noArticle')); return; }
     const title = findTitle(main);
     const body = clean(main, title);
     const minutes = readingTime(body.textContent || '');
@@ -236,27 +241,27 @@
     sh.innerHTML = `<style>${CSS}</style>
       <div class="bar"></div>
       <div class="tools">
-        <button class="tool aa" title="排版" aria-label="排版设置" aria-expanded="false">Aa</button>
-        <button class="tool play" title="朗读全文" aria-label="朗读全文">
+        <button class="tool aa" title="${esc(L('rdTypography'))}" aria-label="${esc(L('rdTypographySettings'))}" aria-expanded="false">Aa</button>
+        <button class="tool play" title="${esc(L('rdReadAloud'))}" aria-label="${esc(L('rdReadAloud'))}">
           <svg class="play-i" viewBox="0 0 24 24"><path class="fill" d="M8 5.8v12.4a.8.8 0 0 0 1.2.7l10-6.2a.8.8 0 0 0 0-1.4l-10-6.2A.8.8 0 0 0 8 5.8z"/></svg>
           <svg class="pause-i" viewBox="0 0 24 24"><rect class="fill" x="7" y="5.5" width="3.6" height="13" rx="1"/><rect class="fill" x="13.4" y="5.5" width="3.6" height="13" rx="1"/></svg>
         </button>
-        <button class="tool close" title="退出阅读模式 (Esc)" aria-label="退出阅读模式">
+        <button class="tool close" title="${esc(L('readerExit'))} (Esc)" aria-label="${esc(L('readerExit'))}">
           <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
-      <div class="panel" role="dialog" aria-label="排版设置">
-        <div class="prow"><span>字号</span>
-          <div class="seg"><button data-fs="-1" aria-label="缩小字号">A−</button><span class="val fs-val"></span><button data-fs="1" aria-label="放大字号">A+</button></div></div>
-        <div class="prow"><span>行宽</span>
-          <div class="seg" role="radiogroup" aria-label="行宽"><button role="radio" data-mw="s">窄</button><button role="radio" data-mw="m">中</button><button role="radio" data-mw="l">宽</button></div></div>
-        <div class="prow"><span>字体</span>
-          <div class="seg" role="radiogroup" aria-label="字体"><button role="radio" data-ff="sans">黑体</button><button role="radio" data-ff="serif" class="serif-btn">宋体</button></div></div>
-        <div class="prow"><span>朗读语速</span>
-          <div class="seg" role="radiogroup" aria-label="朗读语速"><button role="radio" data-rate="0.8">慢</button><button role="radio" data-rate="1">1×</button><button role="radio" data-rate="1.25">1.25</button><button role="radio" data-rate="1.5">1.5</button></div></div>
+      <div class="panel" role="dialog" aria-label="${esc(L('rdTypographySettings'))}">
+        <div class="prow"><span>${esc(L('rdSize'))}</span>
+          <div class="seg"><button data-fs="-1" aria-label="${esc(L('rdSmaller'))}">A−</button><span class="val fs-val"></span><button data-fs="1" aria-label="${esc(L('rdLarger'))}">A+</button></div></div>
+        <div class="prow"><span>${esc(L('rdWidth'))}</span>
+          <div class="seg" role="radiogroup" aria-label="${esc(L('rdWidth'))}"><button role="radio" data-mw="s">${esc(L('rdNarrow'))}</button><button role="radio" data-mw="m">${esc(L('rdMedium'))}</button><button role="radio" data-mw="l">${esc(L('rdWide'))}</button></div></div>
+        <div class="prow"><span>${esc(L('rdFont'))}</span>
+          <div class="seg" role="radiogroup" aria-label="${esc(L('rdFont'))}"><button role="radio" data-ff="sans">${esc(L('rdSans'))}</button><button role="radio" data-ff="serif" class="serif-btn">${esc(L('rdSerif'))}</button></div></div>
+        <div class="prow"><span>${esc(L('rdSpeed'))}</span>
+          <div class="seg" role="radiogroup" aria-label="${esc(L('rdSpeed'))}"><button role="radio" data-rate="0.8">${esc(L('rdSlow'))}</button><button role="radio" data-rate="1">1×</button><button role="radio" data-rate="1.25">1.25</button><button role="radio" data-rate="1.5">1.5</button></div></div>
       </div>
       <div class="wrap" tabindex="-1"><main class="page">
         <div class="site"></div><h1 class="title"></h1>
-        <div class="meta">约 ${minutes} 分钟读完</div>
+        <div class="meta">${esc(L('readTime', [String(minutes)]))}</div>
         <div class="body"></div>
       </main></div>`;
     sh.querySelector('.site').textContent = location.hostname.replace(/^www\./, '');
@@ -423,7 +428,7 @@
   function setPlayingUI(on) {
     if (!tts.btn) return;
     tts.btn.classList.toggle('on', on);
-    tts.btn.title = on ? '暂停朗读' : '朗读全文';
+    tts.btn.title = on ? L('rdPause') : L('rdReadAloud');
     tts.btn.setAttribute('aria-label', tts.btn.title);
   }
   function startAt(i) {

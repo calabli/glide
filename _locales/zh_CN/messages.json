@@ -1,0 +1,225 @@
+{
+  "extName": {
+    "message": "Glide"
+  },
+  "extDesc": {
+    "message": "安静、优雅的回到顶部 / 到底部、夜间模式与阅读模式。"
+  },
+  "cmdTop": {
+    "message": "回到顶部"
+  },
+  "cmdBottom": {
+    "message": "到底部"
+  },
+  "cmdTheme": {
+    "message": "切换明暗"
+  },
+  "cmdReader": {
+    "message": "阅读模式"
+  },
+  "dockTop": {
+    "message": "回到顶部"
+  },
+  "dockBottom": {
+    "message": "到底部"
+  },
+  "dockTheme": {
+    "message": "切换明暗"
+  },
+  "dockReader": {
+    "message": "阅读模式"
+  },
+  "readerExit": {
+    "message": "退出阅读模式"
+  },
+  "noArticle": {
+    "message": "这个页面没有找到正文"
+  },
+  "readTime": {
+    "message": "约 $N$ 分钟读完",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "rdTypography": {
+    "message": "排版"
+  },
+  "rdTypographySettings": {
+    "message": "排版设置"
+  },
+  "rdReadAloud": {
+    "message": "朗读全文"
+  },
+  "rdPause": {
+    "message": "暂停朗读"
+  },
+  "rdSize": {
+    "message": "字号"
+  },
+  "rdSmaller": {
+    "message": "缩小字号"
+  },
+  "rdLarger": {
+    "message": "放大字号"
+  },
+  "rdWidth": {
+    "message": "行宽"
+  },
+  "rdNarrow": {
+    "message": "窄"
+  },
+  "rdMedium": {
+    "message": "中"
+  },
+  "rdWide": {
+    "message": "宽"
+  },
+  "rdFont": {
+    "message": "字体"
+  },
+  "rdSans": {
+    "message": "黑体"
+  },
+  "rdSerif": {
+    "message": "宋体"
+  },
+  "rdSpeed": {
+    "message": "朗读语速"
+  },
+  "rdSlow": {
+    "message": "慢"
+  },
+  "pUnsupported": {
+    "message": "此页面不支持（浏览器内置页面或扩展商店）。"
+  },
+  "pLocalFile": {
+    "message": "本地文件"
+  },
+  "pSiteDark": {
+    "message": "本网站夜间模式"
+  },
+  "pManual": {
+    "message": "手动设置"
+  },
+  "pReturnAuto": {
+    "message": "恢复跟随系统"
+  },
+  "pNativeDark": {
+    "message": "网页本身是深色，已自动跳过"
+  },
+  "pNever": {
+    "message": "本网站不自动开启"
+  },
+  "pNeverNote": {
+    "message": "反色效果不理想的网站，自动开启时跳过"
+  },
+  "pBright": {
+    "message": "本网站夜间亮度"
+  },
+  "pReset": {
+    "message": "重置"
+  },
+  "pAuto": {
+    "message": "自动开启"
+  },
+  "pAutoAria": {
+    "message": "自动开启夜间模式"
+  },
+  "pModeSystem": {
+    "message": "跟随系统"
+  },
+  "pModeSchedule": {
+    "message": "定时"
+  },
+  "pModeOff": {
+    "message": "关闭"
+  },
+  "pFollowing": {
+    "message": "跟随系统"
+  },
+  "pScheduled": {
+    "message": "定时 $FROM$–$TO$",
+    "placeholders": {
+      "from": {
+        "content": "$1"
+      },
+      "to": {
+        "content": "$2"
+      }
+    }
+  },
+  "pAutoOff": {
+    "message": "自动开启已关闭"
+  },
+  "pFrom": {
+    "message": "从"
+  },
+  "pTo": {
+    "message": "到"
+  },
+  "pNextDay": {
+    "message": "次日"
+  },
+  "pSameTime": {
+    "message": "时间不能相同"
+  },
+  "pModeNoteSystem": {
+    "message": "macOS / Windows 切到深色时，为浅色网站开启"
+  },
+  "pModeNoteOff": {
+    "message": "只在你手动打开的网站使用夜间模式"
+  },
+  "pBackground": {
+    "message": "夜间底色"
+  },
+  "pText": {
+    "message": "文字"
+  },
+  "pTextAria": {
+    "message": "文字亮度"
+  },
+  "pPreview": {
+    "message": "预览"
+  },
+  "pPreviewText": {
+    "message": "正文文字在夜间模式下的样子"
+  },
+  "pPosition": {
+    "message": "按钮位置"
+  },
+  "posBL": {
+    "message": "左下"
+  },
+  "posLM": {
+    "message": "左侧中间"
+  },
+  "posRM": {
+    "message": "右侧中间"
+  },
+  "posBR": {
+    "message": "右下"
+  },
+  "pReaderOpen": {
+    "message": "进入阅读模式"
+  },
+  "pReaderClose": {
+    "message": "退出阅读模式"
+  },
+  "swGraphite": {
+    "message": "石墨"
+  },
+  "swNight": {
+    "message": "夜蓝"
+  },
+  "swWarm": {
+    "message": "暖棕"
+  },
+  "swGreen": {
+    "message": "墨绿"
+  },
+  "swBlack": {
+    "message": "纯黑"
+  }
+}
