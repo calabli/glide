@@ -46,7 +46,7 @@ Glide asks for one permission, `storage`, to remember your settings. It makes no
   Prefers on-device voices (macOS "Tingting", Windows "Xiaoxiao / Huihui"), so no network is needed
 
 ## Install (Chrome / Edge / Arc)
-1. Get the code: `git clone https://github.com/calabli/glide.git`, or on GitHub click **Code → Download ZIP** and unzip it
+1. Get the code: download `glide-x.y.z.zip` from [Releases](https://github.com/calabli/glide/releases/latest) and unzip it, or run `git clone https://github.com/calabli/glide.git`
 2. Open `chrome://extensions` (in Edge, `edge://extensions`)
 3. Turn on **Developer mode** in the top-right corner
 4. Click **Load unpacked** and choose the `glide` folder

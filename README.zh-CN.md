@@ -46,7 +46,7 @@
   优先使用本机语音（macOS「婷婷」、Windows「晓晓 / 慧慧」），不用联网
 
 ## 安装（Chrome / Edge / Arc）
-1. 下载代码：`git clone https://github.com/calabli/glide.git`，或在 GitHub 页面点 **Code → Download ZIP** 并解压
+1. 下载代码：在 [Releases](https://github.com/calabli/glide/releases/latest) 下载 `glide-x.y.z.zip` 并解压，或者 `git clone https://github.com/calabli/glide.git`
 2. 地址栏打开 `chrome://extensions`（Edge 为 `edge://extensions`）
 3. 打开右上角「开发者模式」
 4. 点「加载已解压的扩展程序」，选择 `glide` 文件夹
