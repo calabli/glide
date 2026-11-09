@@ -221,5 +221,8 @@
   },
   "swBlack": {
     "message": "纯黑"
+  },
+  "pDblTop": {
+    "message": "双击空白处回到顶部"
   }
 }

@@ -221,5 +221,8 @@
   },
   "swBlack": {
     "message": "Pure Black"
+  },
+  "pDblTop": {
+    "message": "Double-click blank space → top"
   }
 }

@@ -91,6 +91,8 @@
      2. 没选过 → 跟随系统：系统是深色、且网页本身不是深色时开启
      手动切换后若恰好和"跟随系统"的结果一致，就清掉手动记录，继续跟随系统 */
   const FOLLOW = 'followSystem';   // 旧版设置，读到 false 时当作"关闭"
+  const DBL = 'dblTop';             // 双击空白处回到顶部（默认开）
+  let dblTop = true;
   const POS = 'dockPos';            // 按钮位置：br 右下 / bl 左下 / rm 右侧中间 / lm 左侧中间
   let pos = 'br';
   function setPos(p) {
@@ -146,7 +148,8 @@
   setInterval(() => { if (mode === 'schedule') sync(); }, 30000);
   document.addEventListener('visibilitychange', () => { if (mode === 'schedule' && !document.hidden) sync(); });
   if (store) {
-    store.get([KEY, FOLLOW, MODE, SCHED, PALETTE, TUNE, POS]).then((r) => {
+    store.get([KEY, FOLLOW, MODE, SCHED, PALETTE, TUNE, POS, DBL]).then((r) => {
+      dblTop = r[DBL] !== false;
       siteChoice = readSite(r[KEY]);
       setTune(r[TUNE]);
       mode = readMode(r);
@@ -167,6 +170,7 @@
       if (PALETTE in ch) setPalette(ch[PALETTE].newValue);
       if (TUNE in ch) setTune(ch[TUNE].newValue);
       if (POS in ch) setPos(ch[POS].newValue);
+      if (DBL in ch) dblTop = ch[DBL].newValue !== false;
       if (KEY in ch || MODE in ch || SCHED in ch || TUNE in ch) sync();
     });
   } else {
@@ -363,6 +367,28 @@
 
   addEventListener('resize', () => update(), { passive: true });
   addEventListener('glide-scroll', () => { update(); show(); });   // 阅读模式里的滚动
+
+  /* ---------- 双击空白处回到顶部 ----------
+     只在真正的空白处生效：双击段落等含文字的元素、链接、按钮、输入框、图片、视频、
+     地图画布、可编辑区域都不触发；网页自己处理了双击（preventDefault）也不触发 */
+  const NOT_BLANK = 'a,button,input,textarea,select,option,label,summary,details,[contenteditable],[role="button"],' +
+    '[role="textbox"],[role="slider"],[role="menuitem"],[role="tab"],[role="link"],[draggable="true"],' +
+    'img,picture,video,audio,canvas,svg,iframe,embed,object,glide-dock';
+  // 被点中的元素自己直接含有文字（段落、列表项、标题…）就算"点在文字上"
+  const hasOwnText = (el) => [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
+  addEventListener('dblclick', (e) => {
+    if (!dblTop || e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    const t = e.composedPath()[0];                         // 阅读模式在 shadow DOM 里，取真实目标
+    if (!(t instanceof Element) || t.isContentEditable || t.closest(NOT_BLANK) || hasOwnText(t)) return;
+    const s = getScroller();
+    const y = s === docEl() ? window.scrollY : s.scrollTop;
+    if (y < 8) return;                                     // 已经在顶部
+    const sel = getSelection();
+    if (sel) sel.removeAllRanges();                        // 双击空白处时浏览器会顺手选中旁边一个字，清掉
+    scrollToEdge('top');
+    update();
+    show();
+  });
   addEventListener('glide-reader', () => {                          // 阅读模式打开 / 关闭
     if (!btnReader) return;
     const on = !!(window.__glideReader && window.__glideReader.isOpen());

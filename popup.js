@@ -148,6 +148,9 @@ for (const id of ['from', 'to']) {
   };
 }
 
+/* ---------- 双击空白处回到顶部 ---------- */
+$('dbl').onchange = (e) => store.set({ dblTop: e.target.checked });
+
 /* ---------- 按钮位置 ---------- */
 function paintPos() { for (const b of $('pos').children) b.setAttribute('aria-checked', String(b.dataset.pos === pos)); }
 $('pos').onclick = (e) => {
@@ -161,7 +164,8 @@ $('reader').onclick = async () => { await ask('reader'); window.close(); };
 
 /* ---------- 初始化 ---------- */
 (async () => {
-  const s = await store.get(['palette', 'followSystem', 'autoMode', 'schedule', 'dockPos']);
+  const s = await store.get(['palette', 'followSystem', 'autoMode', 'schedule', 'dockPos', 'dblTop']);
+  $('dbl').checked = s.dblTop !== false;
   palette = { ...DEFAULT, ...(s.palette || {}) };
   mode = s.autoMode || (s.followSystem === false ? 'off' : 'system');
   sched = { ...sched, ...(s.schedule || {}) };
