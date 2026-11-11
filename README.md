@@ -14,7 +14,7 @@ Glide asks for one permission, `storage`, to remember your settings. It makes no
 - ↑ hides when you're already at the top, ↓ hides at the bottom
 - Works with web apps that scroll inside a container; in reading mode it scrolls the reading view
 - Hides itself in fullscreen video and when printing
-- **Double-click blank space to go back to top** (on by default, switch in the settings panel). Text, links, buttons, fields, images and video are left alone, so double-clicking a word still selects it
+- **Double-click blank space to go back to top** (on by default; turn it off per site in the settings panel). Text, links, buttons, fields, images and video are left alone, so double-clicking a word still selects it
 
 ## Dark mode
 - Switching expands as a circle from the button you clicked
@@ -30,13 +30,13 @@ Glide asks for one permission, `storage`, to remember your settings. It makes no
 > In Chrome, Settings → Appearance → Mode should stay on "Device".
 
 ## Settings panel (click the Glide icon in the toolbar)
+- **This site**: turn the pill and double-click to top on or off separately for each site. Hiding the pill keeps dark mode, shortcuts and reading mode working there
 - Dark mode for this site, with one click to return it to auto
 - Don't auto-enable on this site: for sites that don't invert well (you can still turn it on by hand)
 - Dark-mode brightness for this site: 60%–140%, affects only this site; click the value to reset
 - Auto-enable: follow system / schedule (start and end time) / off
 - Background color: Graphite (default), Night Blue, Warm Brown, Ink Green, Pure Black; text brightness slider with live preview
 - Pill position: bottom right, bottom left, right middle, left middle
-- Double-click blank space → top: on / off
 
 ## Reading mode
 - Finds the article text and drops navigation, sidebars, comments, share buttons and ads

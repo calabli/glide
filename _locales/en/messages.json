@@ -222,7 +222,13 @@
   "swBlack": {
     "message": "Pure Black"
   },
-  "pDblTop": {
-    "message": "Double-click blank space → top"
+  "pSiteFeatures": {
+    "message": "This site"
+  },
+  "chipDock": {
+    "message": "Pill"
+  },
+  "chipDbl": {
+    "message": "Double-click ↑"
   }
 }

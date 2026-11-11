@@ -222,7 +222,13 @@
   "swBlack": {
     "message": "纯黑"
   },
-  "pDblTop": {
-    "message": "双击空白处回到顶部"
+  "pSiteFeatures": {
+    "message": "本网站启用"
+  },
+  "chipDock": {
+    "message": "按钮胶囊"
+  },
+  "chipDbl": {
+    "message": "双击回顶部"
   }
 }

@@ -58,7 +58,9 @@
 
   /* ---------- 按网站微调：亮度、不自动开启 ---------- */
   const TUNE = 'tune:' + (location.hostname || location.protocol);
-  const DEFAULT_TUNE = { brightness: 1, never: false };
+  // 按网站分开的设置：夜间亮度、不自动开启、显示按钮胶囊、双击空白回顶部
+  // dbl 没单独设置过时，沿用旧版的全局开关（默认开）
+  const DEFAULT_TUNE = { brightness: 1, never: false, dock: true };
   let tune = { ...DEFAULT_TUNE };
   const filterStyle = document.createElement('style');
   (document.head || root).appendChild(filterStyle);
@@ -74,6 +76,7 @@
   function setTune(t) {
     tune = { ...DEFAULT_TUNE, ...(t || {}) };
     applyFilter();
+    applyDock();
   }
   applyFilter();
 
@@ -91,8 +94,12 @@
      2. 没选过 → 跟随系统：系统是深色、且网页本身不是深色时开启
      手动切换后若恰好和"跟随系统"的结果一致，就清掉手动记录，继续跟随系统 */
   const FOLLOW = 'followSystem';   // 旧版设置，读到 false 时当作"关闭"
-  const DBL = 'dblTop';             // 双击空白处回到顶部（默认开）
+  const DBL = 'dblTop';             // 旧版的全局双击开关，现在只作为各网站的默认值
   let dblTop = true;
+  const dblOn = () => ('dbl' in tune ? !!tune.dbl : dblTop);
+  function applyDock() {                     // 本网站不显示按钮胶囊：快捷键、阅读模式照常可用
+    if (host) host.style.setProperty('display', tune.dock === false ? 'none' : 'block', 'important');
+  }
   const POS = 'dockPos';            // 按钮位置：br 右下 / bl 左下 / rm 右侧中间 / lm 左侧中间
   let pos = 'br';
   function setPos(p) {
@@ -257,6 +264,7 @@
 
     root.appendChild(host);
     setPos(pos);
+    applyDock();
     sync();          // 页面加载完后再判断一次：此时才能看出网页本身是不是深色
     refreshLook();
     update();
@@ -377,7 +385,7 @@
   // 被点中的元素自己直接含有文字（段落、列表项、标题…）就算"点在文字上"
   const hasOwnText = (el) => [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
   addEventListener('dblclick', (e) => {
-    if (!dblTop || e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    if (!dblOn() || e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
     const t = e.composedPath()[0];                         // 阅读模式在 shadow DOM 里，取真实目标
     if (!(t instanceof Element) || t.isContentEditable || t.closest(NOT_BLANK) || hasOwnText(t)) return;
     const s = getScroller();
@@ -455,8 +463,10 @@
       else if (m.cmd === 'set-dark') { if (!!m.on !== dark) toggleTheme(); reply(state()); }
       else if (m.cmd === 'reset-site') { resetSite(); reply(state()); }
       else if (m.cmd === 'set-tune') {
-        setTune({ ...tune, ...m.tune });
-        const isDefault = tune.brightness === 1 && !tune.never;
+        const next = { ...tune, ...m.tune };
+        if ('dbl' in next && !!next.dbl === dblTop) delete next.dbl;   // 和默认一样就不单独记
+        setTune(next);
+        const isDefault = tune.brightness === 1 && !tune.never && tune.dock !== false && !('dbl' in tune);
         if (store) (isDefault ? store.remove(TUNE) : store.set({ [TUNE]: tune })).catch(() => {});
         sync();
         reply(state());
@@ -473,7 +483,7 @@
       dark,
       manual: siteChoice !== null,
       nativeDark: pageNativeDark(),
-      tune: { ...tune },
+      tune: { ...tune, dbl: dblOn() },
       mode,
       systemDark: sysDark.matches,
       reader: !!(window.__glideReader && window.__glideReader.isOpen()),

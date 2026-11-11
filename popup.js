@@ -48,6 +48,8 @@ function render(st) {
   $('readerLabel').textContent = st.reader ? L('pReaderClose') : L('pReaderOpen');
   const t = st.tune || { brightness: 1, never: false };
   $('never').checked = !!t.never;
+  $('chipDock').setAttribute('aria-pressed', String(t.dock !== false));
+  $('chipDbl').setAttribute('aria-pressed', String(t.dbl !== false));
   if (!tuneTimer) $('bright').value = Math.round(t.brightness * 100);   // 正在拖动时不要把滑块弹回去
   paintBright();
 }
@@ -149,7 +151,14 @@ for (const id of ['from', 'to']) {
 }
 
 /* ---------- 双击空白处回到顶部 ---------- */
-$('dbl').onchange = (e) => store.set({ dblTop: e.target.checked });
+/* ---------- 本网站功能开关：按钮胶囊、双击回顶部 ---------- */
+for (const [id, key] of [['chipDock', 'dock'], ['chipDbl', 'dbl']]) {
+  $(id).onclick = async () => {
+    const on = $(id).getAttribute('aria-pressed') !== 'true';
+    $(id).setAttribute('aria-pressed', String(on));   // 先改界面，不等网页回复
+    render(await ask('set-tune', { tune: { [key]: on } }));
+  };
+}
 
 /* ---------- 按钮位置 ---------- */
 function paintPos() { for (const b of $('pos').children) b.setAttribute('aria-checked', String(b.dataset.pos === pos)); }
@@ -164,8 +173,7 @@ $('reader').onclick = async () => { await ask('reader'); window.close(); };
 
 /* ---------- 初始化 ---------- */
 (async () => {
-  const s = await store.get(['palette', 'followSystem', 'autoMode', 'schedule', 'dockPos', 'dblTop']);
-  $('dbl').checked = s.dblTop !== false;
+  const s = await store.get(['palette', 'followSystem', 'autoMode', 'schedule', 'dockPos']);
   palette = { ...DEFAULT, ...(s.palette || {}) };
   mode = s.autoMode || (s.followSystem === false ? 'off' : 'system');
   sched = { ...sched, ...(s.schedule || {}) };
