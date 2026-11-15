@@ -14,12 +14,12 @@ Glide asks for one permission, `storage`, to remember your settings. It makes no
 - ↑ hides when you're already at the top, ↓ hides at the bottom
 - Works with web apps that scroll inside a container; in reading mode it scrolls the reading view
 - Hides itself in fullscreen video and when printing
-- **Double-click blank space to go back to top** (on by default; turn it off per site in the settings panel). Text, links, buttons, fields, images and video are left alone, so double-clicking a word still selects it
+- **Double-click blank space to go back to top** (on by default; change the default or turn it off per site in the settings panel). Text, links, buttons, fields, images and video are left alone, so double-clicking a word still selects it
 
 ## Dark mode
 - Switching expands as a circle from the button you clicked
 - A soft dark gray background (#22242a by default) instead of pure black; images and videos keep their real colors
-- **Auto-enable** (pick one):
+- **Auto dark** (pick one, **Off** by default):
   - Follow system: turns on for sites you haven't set manually when macOS or Windows switches to dark
   - Schedule: e.g. 19:00–07:00, can cross midnight; switches on time and re-checks right after the computer wakes
   - Off: dark mode only on sites where you turn it on yourself
@@ -31,10 +31,11 @@ Glide asks for one permission, `storage`, to remember your settings. It makes no
 
 ## Settings panel (click the Glide icon in the toolbar)
 - **This site**: turn the pill and double-click to top on or off separately for each site. Hiding the pill keeps dark mode, shortcuts and reading mode working there
+- **All sites**: choose whether the pill and double-click to top are on by default. A site you set yourself keeps its own choice
 - Dark mode for this site, with one click to return it to auto
 - Don't auto-enable on this site: for sites that don't invert well (you can still turn it on by hand)
 - Dark-mode brightness for this site: 60%–140%, affects only this site; click the value to reset
-- Auto-enable: follow system / schedule (start and end time) / off
+- Auto dark: follow system / schedule (start and end time) / off (default)
 - Background color: Graphite (default), Night Blue, Warm Brown, Ink Green, Pure Black; text brightness slider with live preview
 - Pill position: bottom right, bottom left, right middle, left middle
 

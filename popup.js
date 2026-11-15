@@ -111,7 +111,7 @@ $('never').onchange = async (e) => {
 /* ---------- 开关 ---------- */
 $('siteDark').onchange = async (e) => render(await ask('set-dark', { on: e.target.checked }));
 /* ---------- 自动开启：跟随系统 / 定时 / 关闭 ---------- */
-let mode = 'system';
+let mode = 'off';   // 默认不自动开启夜间模式
 let sched = { from: '19:00', to: '07:00' };
 let pos = 'br';
 function autoLabel() {
@@ -160,6 +160,16 @@ for (const [id, key] of [['chipDock', 'dock'], ['chipDbl', 'dbl']]) {
   };
 }
 
+/* ---------- 所有网站默认：按钮胶囊、双击回顶部 ---------- */
+for (const [id, key] of [['defDock', 'dockDefault'], ['defDbl', 'dblTop']]) {
+  $(id).onclick = async () => {
+    const on = $(id).getAttribute('aria-pressed') !== 'true';
+    $(id).setAttribute('aria-pressed', String(on));
+    await store.set({ [key]: on });
+    refreshSite();   // 没单独设置过的当前网站会跟着变
+  };
+}
+
 /* ---------- 按钮位置 ---------- */
 function paintPos() { for (const b of $('pos').children) b.setAttribute('aria-checked', String(b.dataset.pos === pos)); }
 $('pos').onclick = (e) => {
@@ -173,9 +183,11 @@ $('reader').onclick = async () => { await ask('reader'); window.close(); };
 
 /* ---------- 初始化 ---------- */
 (async () => {
-  const s = await store.get(['palette', 'followSystem', 'autoMode', 'schedule', 'dockPos']);
+  const s = await store.get(['palette', 'followSystem', 'autoMode', 'schedule', 'dockPos', 'dockDefault', 'dblTop']);
+  $('defDock').setAttribute('aria-pressed', String(s.dockDefault !== false));
+  $('defDbl').setAttribute('aria-pressed', String(s.dblTop !== false));
   palette = { ...DEFAULT, ...(s.palette || {}) };
-  mode = s.autoMode || (s.followSystem === false ? 'off' : 'system');
+  mode = s.autoMode || (s.followSystem === true ? 'system' : 'off');
   sched = { ...sched, ...(s.schedule || {}) };
   pos = s.dockPos || 'br';
   paintMode();

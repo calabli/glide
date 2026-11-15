@@ -58,9 +58,9 @@
 
   /* ---------- 按网站微调：亮度、不自动开启 ---------- */
   const TUNE = 'tune:' + (location.hostname || location.protocol);
-  // 按网站分开的设置：夜间亮度、不自动开启、显示按钮胶囊、双击空白回顶部
-  // dbl 没单独设置过时，沿用旧版的全局开关（默认开）
-  const DEFAULT_TUNE = { brightness: 1, never: false, dock: true };
+  // 按网站分开的设置：夜间亮度、不自动开启、显示按钮胶囊（dock）、双击空白回顶部（dbl）
+  // dock / dbl 只在和「所有网站默认」不同时才单独记；没记就用默认
+  const DEFAULT_TUNE = { brightness: 1, never: false };
   let tune = { ...DEFAULT_TUNE };
   const filterStyle = document.createElement('style');
   (document.head || root).appendChild(filterStyle);
@@ -74,7 +74,10 @@
       `html.glide-dark :is(${MEDIA}){filter:${media}!important}`;
   }
   function setTune(t) {
-    tune = { ...DEFAULT_TUNE, ...(t || {}) };
+    t = { ...(t || {}) };
+    if (t.v !== 2 && t.dock === true) delete t.dock;   // 1.4.0 总是把 dock:true 一起存下，那不是你的选择
+    delete t.v;
+    tune = { ...DEFAULT_TUNE, ...t };
     applyFilter();
     applyDock();
   }
@@ -94,11 +97,13 @@
      2. 没选过 → 跟随系统：系统是深色、且网页本身不是深色时开启
      手动切换后若恰好和"跟随系统"的结果一致，就清掉手动记录，继续跟随系统 */
   const FOLLOW = 'followSystem';   // 旧版设置，读到 false 时当作"关闭"
-  const DBL = 'dblTop';             // 旧版的全局双击开关，现在只作为各网站的默认值
-  let dblTop = true;
+  // 所有网站的默认：双击回顶部（dblTop）、显示按钮胶囊（dockDefault），都默认开
+  const DBL = 'dblTop', DOCK_DEF = 'dockDefault';
+  let dblTop = true, dockDefault = true;
   const dblOn = () => ('dbl' in tune ? !!tune.dbl : dblTop);
+  const dockOn = () => ('dock' in tune ? !!tune.dock : dockDefault);
   function applyDock() {                     // 本网站不显示按钮胶囊：快捷键、阅读模式照常可用
-    if (host) host.style.setProperty('display', tune.dock === false ? 'none' : 'block', 'important');
+    if (host) host.style.setProperty('display', dockOn() ? 'block' : 'none', 'important');
   }
   const POS = 'dockPos';            // 按钮位置：br 右下 / bl 左下 / rm 右侧中间 / lm 左侧中间
   let pos = 'br';
@@ -113,7 +118,7 @@
   let siteChoice = null;   // null = 没手动选过
   // 自动开启方式：system 跟随系统 / schedule 定时 / off 关闭
   const MODE = 'autoMode', SCHED = 'schedule';
-  let mode = 'system';
+  let mode = 'off';                  // 默认不自动开启夜间模式
   let sched = { from: '19:00', to: '07:00' };
   const toMin = (t) => { const [h, m] = String(t).split(':').map(Number); return ((h || 0) * 60 + (m || 0)) % 1440; };
   function inSchedule() {
@@ -122,7 +127,8 @@
     if (a === b) return false;
     return a < b ? now >= a && now < b : now >= a || now < b;   // 跨午夜，例如 19:00–07:00
   }
-  const readMode = (r) => r[MODE] || (r[FOLLOW] === false ? 'off' : 'system');
+  // 没选过模式时默认关闭；旧版的「跟随系统」开关明确打开过的，仍按跟随系统处理
+  const readMode = (r) => r[MODE] || (r[FOLLOW] === true ? 'system' : 'off');
   const readSite = (v) => (v == null ? null : typeof v === 'object' ? !!v.on : !!v);
   const autoOn = () => (mode === 'system' ? sysDark.matches : mode === 'schedule' ? inSchedule() : false);
   const autoDark = () => !tune.never && autoOn() && !pageNativeDark();
@@ -155,7 +161,8 @@
   setInterval(() => { if (mode === 'schedule') sync(); }, 30000);
   document.addEventListener('visibilitychange', () => { if (mode === 'schedule' && !document.hidden) sync(); });
   if (store) {
-    store.get([KEY, FOLLOW, MODE, SCHED, PALETTE, TUNE, POS, DBL]).then((r) => {
+    store.get([KEY, FOLLOW, MODE, SCHED, PALETTE, TUNE, POS, DBL, DOCK_DEF]).then((r) => {
+      dockDefault = r[DOCK_DEF] !== false;
       dblTop = r[DBL] !== false;
       siteChoice = readSite(r[KEY]);
       setTune(r[TUNE]);
@@ -172,12 +179,13 @@
         if (v && v.src === TAB) return;   // 自己写的
         siteChoice = readSite(v);         // 同一网站的其他标签页切换了
       }
-      if (MODE in ch) mode = ch[MODE].newValue || 'system';
+      if (MODE in ch) mode = ch[MODE].newValue || 'off';
       if (SCHED in ch && ch[SCHED].newValue) sched = { ...sched, ...ch[SCHED].newValue };
       if (PALETTE in ch) setPalette(ch[PALETTE].newValue);
       if (TUNE in ch) setTune(ch[TUNE].newValue);
       if (POS in ch) setPos(ch[POS].newValue);
       if (DBL in ch) dblTop = ch[DBL].newValue !== false;
+      if (DOCK_DEF in ch) { dockDefault = ch[DOCK_DEF].newValue !== false; applyDock(); }
       if (KEY in ch || MODE in ch || SCHED in ch || TUNE in ch) sync();
     });
   } else {
@@ -465,9 +473,10 @@
       else if (m.cmd === 'set-tune') {
         const next = { ...tune, ...m.tune };
         if ('dbl' in next && !!next.dbl === dblTop) delete next.dbl;   // 和默认一样就不单独记
-        setTune(next);
-        const isDefault = tune.brightness === 1 && !tune.never && tune.dock !== false && !('dbl' in tune);
-        if (store) (isDefault ? store.remove(TUNE) : store.set({ [TUNE]: tune })).catch(() => {});
+        if ('dock' in next && !!next.dock === dockDefault) delete next.dock;
+        setTune({ ...next, v: 2 });
+        const isDefault = tune.brightness === 1 && !tune.never && !('dock' in tune) && !('dbl' in tune);
+        if (store) (isDefault ? store.remove(TUNE) : store.set({ [TUNE]: { ...tune, v: 2 } })).catch(() => {});
         sync();
         reply(state());
       }
@@ -483,7 +492,7 @@
       dark,
       manual: siteChoice !== null,
       nativeDark: pageNativeDark(),
-      tune: { ...tune, dbl: dblOn() },
+      tune: { ...tune, dbl: dblOn(), dock: dockOn() },
       mode,
       systemDark: sysDark.matches,
       reader: !!(window.__glideReader && window.__glideReader.isOpen()),

@@ -122,7 +122,7 @@
     "message": "Reset"
   },
   "pAuto": {
-    "message": "Auto-enable"
+    "message": "Auto dark"
   },
   "pAutoAria": {
     "message": "Turn on dark mode automatically"
@@ -230,5 +230,11 @@
   },
   "chipDbl": {
     "message": "Double-click ↑"
+  },
+  "pDefaults": {
+    "message": "All sites"
+  },
+  "pDefaultsAria": {
+    "message": "On by default for all sites"
   }
 }

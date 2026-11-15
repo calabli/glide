@@ -106,6 +106,8 @@
   .chip[aria-pressed="true"]{color:var(--fg);background:color-mix(in srgb, var(--accent) 16%, var(--field))}
   .chip[aria-pressed="true"] .tick{background:var(--accent);box-shadow:none}
   .chip[aria-pressed="true"] .tick::after{content:"";position:absolute;left:4px;top:2px;width:3px;height:6px;border:solid #fff;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+  .swatch-row{display:flex;align-items:center;gap:10px;padding-top:8px}
+  .swatch-row .swatches{flex:1;justify-content:flex-end;gap:7px;min-width:0}
   .tune{padding:6px 0 10px}
   .tune-head{display:flex;justify-content:space-between;margin-bottom:8px}
   .tune-val{color:var(--sub);font-size:12px;font-variant-numeric:tabular-nums;cursor:pointer}
@@ -159,6 +161,13 @@
 
   <section>
     <div class="row">
+      <span data-i18n="pDefaults" style="white-space:nowrap"></span>
+      <div class="chips" role="group" data-i18n-aria="pDefaultsAria">
+        <button type="button" class="chip" id="defDock" aria-pressed="true"><span class="tick" aria-hidden="true"></span><span data-i18n="chipDock"></span></button>
+        <button type="button" class="chip" id="defDbl" aria-pressed="true"><span class="tick" aria-hidden="true"></span><span data-i18n="chipDbl"></span></button>
+      </div>
+    </div>
+    <div class="row">
       <span data-i18n="pAuto"></span>
       <div class="seg" id="mode" role="radiogroup" data-i18n-aria="pAutoAria">
         <button role="radio" data-mode="system" data-i18n="pModeSystem"></button>
@@ -175,8 +184,10 @@
   </section>
 
   <section>
-    <p class="label" data-i18n="pBackground"></p>
-    <div class="swatches" id="swatches" role="radiogroup" data-i18n-aria="pBackground"></div>
+    <div class="swatch-row">
+      <span class="inline-label" data-i18n="pBackground"></span>
+      <div class="swatches" id="swatches" role="radiogroup" data-i18n-aria="pBackground"></div>
+    </div>
     <div class="slider text-row">
       <span class="inline-label" data-i18n="pText"></span>
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/></svg>
