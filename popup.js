@@ -131,7 +131,7 @@ function paintMode() {
     mode === 'schedule' ? '' : L('pModeNoteOff');
   $('modeNote').style.display = mode === 'schedule' ? 'none' : '';
 }
-async function refreshSite() { setTimeout(async () => render(await ask('state')), 90); }
+function refreshSite() { setTimeout(async () => render(await ask('state')), 90); }
 $('mode').onclick = async (e) => {
   const b = e.target.closest('[data-mode]');
   if (!b) return;
@@ -150,7 +150,6 @@ for (const id of ['from', 'to']) {
   };
 }
 
-/* ---------- 双击空白处回到顶部 ---------- */
 /* ---------- 本网站功能开关：按钮胶囊、双击回顶部 ---------- */
 for (const [id, key] of [['chipDock', 'dock'], ['chipDbl', 'dbl']]) {
   $(id).onclick = async () => {

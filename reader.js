@@ -3,13 +3,11 @@
   if (window.top !== window || window.__glideReader) return;
   // 界面文字：按浏览器语言读取 _locales（中文浏览器显示中文，其他显示英文）
   const L = (k, subs) => { try { return chrome.i18n.getMessage(k, subs) || k; } catch { return k; } };
-  const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
-  const keys = (k) => (IS_MAC ? '⌥⇧' + k : 'Alt+Shift+' + k);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   const NEG = /comment|footer|footnote|sidebar|side-?bar|aside|nav|menu|share|social|related|recommend|advert|\bads?\b|ad-|promo|sponsor|popup|modal|cookie|subscribe|login|signin|breadcrumb|toolbar|widget|banner|rank|hot-?list|copyright/i;
   const POS = /article|content|post|entry|main|body|text|story|topic|markdown|prose|detail/i;
-  const KEEP_ATTR = new Set(['href', 'src', 'srcset', 'alt', 'title', 'colspan', 'rowspan']);
+  const KEEP_ATTR = new Set(['href', 'src', 'srcset', 'alt', 'title', 'colspan', 'rowspan', 'poster', 'controls']);
   const DROP = 'script,style,noscript,iframe,form,input,button,select,textarea,nav,aside,footer,svg,canvas,object,embed,[hidden],[aria-hidden="true"],[role="navigation"],[role="complementary"],[role="banner"]';
 
   const textLen = (el) => (el.textContent || '').replace(/\s+/g, '').length;
@@ -80,6 +78,8 @@
       const o = origImgs[i];
       const lazy = img.getAttribute('data-src') || img.getAttribute('data-original') || img.getAttribute('data-lazy-src') || img.getAttribute('data-actualsrc');
       if (lazy) img.setAttribute('src', lazy);
+      const lazySet = img.getAttribute('data-srcset');
+      if (lazySet) img.setAttribute('srcset', lazySet);
       const w = o ? (o.naturalWidth || o.width) : 0;
       if (o && o.complete && w && w < 48) img.remove();   // 小图标、表情
     });
@@ -93,11 +93,13 @@
     node.querySelectorAll('*').forEach((el) => {
       for (const a of [...el.attributes]) if (!KEEP_ATTR.has(a.name)) el.removeAttribute(a.name);
       if (el.tagName === 'A') {
-        if (el.href) el.setAttribute('href', el.href);
+        if (/^\s*javascript:/i.test(el.getAttribute('href') || '')) el.removeAttribute('href');   // 阅读页里不执行脚本链接
+        else if (el.href) el.setAttribute('href', el.href);
         el.setAttribute('target', '_blank');
         el.setAttribute('rel', 'noopener noreferrer');
       }
       if (el.tagName === 'IMG' && el.getAttribute('src')) el.setAttribute('src', el.src);
+      if (el.tagName === 'VIDEO' || el.tagName === 'AUDIO') el.setAttribute('controls', '');   // 原页面的自定义播放器已被去掉
     });
     // 去掉和标题重复的 h1、空元素
     node.querySelectorAll('h1').forEach((h) => { if (h.textContent.trim() === title) h.remove(); });
@@ -213,7 +215,7 @@
     .toast.in{opacity:1;transform:translate(-50%,0)}
   `;
 
-  let host = null, wrap = null, page = null, savedOverflow = null;
+  let host = null, wrap = null, page = null, savedOverflow = null, savedPriority = '';
   const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function setDark(on) { if (host) host.classList.toggle('dark', !!on); }
@@ -285,6 +287,7 @@
     document.documentElement.insertBefore(host, tint || null);
 
     savedOverflow = document.documentElement.style.getPropertyValue('overflow');
+    savedPriority = document.documentElement.style.getPropertyPriority('overflow');
     document.documentElement.style.setProperty('overflow', 'hidden', 'important');
     addEventListener('keydown', onKey, true);
 
@@ -299,7 +302,7 @@
     const h = host, w = wrap;
     host = null; wrap = null;
     removeEventListener('keydown', onKey, true);
-    if (savedOverflow) document.documentElement.style.setProperty('overflow', savedOverflow);
+    if (savedOverflow) document.documentElement.style.setProperty('overflow', savedOverflow, savedPriority);
     else document.documentElement.style.removeProperty('overflow');
     w.classList.remove('in');
     setTimeout(() => h.remove(), reduce() ? 0 : 350);

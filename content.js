@@ -83,6 +83,9 @@
   }
   applyFilter();
 
+  // 悬浮按钮相关的元素在 build() 里创建；提前声明，避免初始化阶段访问时报 TDZ 错误
+  let host, dock, btnUp, btnDown, btnTheme, btnReader;
+
   // 唯一的状态来源：点击时立即更新，不依赖 DOM（动画进行中 DOM 还没变）
   let dark = false;
   let transition = null;
@@ -202,7 +205,6 @@
 
   const I_BOOK = icon('<path d="M2.5 4.5h5.5a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2.5z"/><path d="M21.5 4.5H16a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h6.5z"/>');
 
-  let host, dock, btnUp, btnDown, btnTheme, btnReader;
   let hovering = false, nearEdge = false, hideTimer = 0, lastScroller = null;
 
   function build() {
@@ -279,11 +281,31 @@
   }
 
   /* ---------- 外观：跟随页面明暗 ---------- */
+  // 计算出的背景色可能是 rgb()，也可能是 oklch()/lab()/color()（如 Tailwind v4），
+  // 后者交给 1×1 画布换算成 RGB，避免把 oklch(0.98 0 0) 这样的浅色误判成深色
+  let probe = null;
+  function toRGBA(color) {
+    if (/^rgba?\(/.test(color)) {
+      const m = color.match(/[\d.]+/g) || [];
+      return [+m[0], +m[1], +m[2], m.length > 3 ? +m[3] : 1];
+    }
+    if (!probe) {
+      const c = document.createElement('canvas');
+      c.width = c.height = 1;
+      probe = c.getContext('2d', { willReadFrequently: true });
+    }
+    if (!probe) return null;
+    probe.clearRect(0, 0, 1, 1);
+    probe.fillStyle = 'rgba(0,0,0,0)';
+    probe.fillStyle = color;
+    probe.fillRect(0, 0, 1, 1);
+    const d = probe.getImageData(0, 0, 1, 1).data;
+    return [d[0], d[1], d[2], d[3] / 255];
+  }
   function luminance(color) {
-    const m = color.match(/[\d.]+/g);
-    if (!m || (m.length === 4 && +m[3] === 0)) return null;
-    const [r, g, b] = m.map(Number);
-    return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    const c = color && toRGBA(color);
+    if (!c || c.some(Number.isNaN) || c[3] === 0) return null;
+    return (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) / 255;
   }
   // 网页本身是不是深色（读取网页自己的背景色，先临时去掉 Glide 的样式）
   function pageNativeDark() {

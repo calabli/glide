@@ -1,6 +1,6 @@
 # Glide
 
-English | [简体中文](README.zh-CN.md) · **[Website](https://calabli.github.io/glide/)** · [Download](https://github.com/calabli/glide/releases/latest)
+English | [简体中文](README.zh-CN.md) · **[Website](https://calabli.github.io/glide/)** · [Download](https://github.com/calabli/glide/releases/latest) · [Product doc (中文)](PRODUCT.md) · [Technical doc (中文)](TECHNICAL.md)
 
 A quiet browser extension. A small frosted-glass pill sits in the corner of every page: **back to top · light/dark · reading mode · to bottom**. It stays invisible until you scroll or move the mouse toward it.
 
