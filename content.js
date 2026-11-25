@@ -8,7 +8,9 @@
   const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
   const keys = (k) => (IS_MAC ? '⌥⇧' + k : 'Alt+Shift+' + k);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const KEY = 'site:' + (location.hostname || location.protocol);
+  // 按网站的设置以主域名为单位（见 domain.js）：github.com、docs.github.com 共用一份
+  const SITE = globalThis.glideDomain(location.hostname || location.protocol);
+  const KEY = 'site:' + SITE;
   // 整页只用浏览器原生、GPU 加速的滤镜（不用 SVG 滤镜，避免标签页崩溃）
   const FILTER = 'invert(1) hue-rotate(180deg)';
   // 再用两层全屏混合层定色：背景 #22242a，最亮文字 #e3e5ea
@@ -57,7 +59,7 @@
   setPalette(DEFAULT_PALETTE);
 
   /* ---------- 按网站微调：亮度、不自动开启 ---------- */
-  const TUNE = 'tune:' + (location.hostname || location.protocol);
+  const TUNE = 'tune:' + SITE;
   // 按网站分开的设置：夜间亮度、不自动开启、显示按钮胶囊（dock）、双击空白回顶部（dbl）
   // dock / dbl 只在和「所有网站默认」不同时才单独记；没记就用默认
   const DEFAULT_TUNE = { brightness: 1, never: false };
@@ -510,7 +512,7 @@
   // 给设置面板看的当前状态
   function state() {
     return {
-      host: location.hostname,
+      host: location.hostname ? SITE : '',
       dark,
       manual: siteChoice !== null,
       nativeDark: pageNativeDark(),

@@ -8,7 +8,8 @@
 ```
 glide/
 ├── manifest.json          扩展清单：权限、内容脚本、快捷键、图标、默认语言
-├── background.js          Service Worker：把快捷键转发给当前标签页
+├── domain.js              主域名计算，内容脚本与 Service Worker 共用
+├── background.js          Service Worker：转发快捷键；升级时把旧的按主机名设置迁移到主域名
 ├── content.js             内容脚本：悬浮胶囊、夜间模式、双击回顶、滚动识别、消息处理
 ├── reader.js              内容脚本：阅读模式（正文提取、排版面板、朗读）
 ├── popup.html / popup.js  设置面板（点工具栏图标弹出）
@@ -33,7 +34,7 @@ glide/
         └──────────────────────────────▶ chrome.storage.local ◀─────────────────────────┘
 ```
 
-- **content.js 和 reader.js** 以 `document_start` 注入所有网址的顶层页面（`window.top !== window` 时直接返回）。两者共享同一个隔离世界（isolated world），通过 `window.__glideReader` 对象和自定义 DOM 事件通信。
+- **domain.js、reader.js、content.js**（按此顺序）以 `document_start` 注入所有网址的顶层页面（`window.top !== window` 时直接返回）。三者共享同一个隔离世界（isolated world）。`domain.js` 提供全局函数 `glideDomain`；reader 与 content 之间通过 `window.__glideReader` 对象和自定义 DOM 事件通信。
 - **设置面板** 直接读写 `chrome.storage.local` 中的全局设置；按网站的设置通过消息交给当前页面的 content.js 计算并保存（因为"是否与默认相同"等判断需要页面状态）。
 - **所有标签页** 监听 `chrome.storage.onChanged`，设置改变后实时生效。
 - 只用 `storage` 权限；不发起任何网络请求。
@@ -42,8 +43,8 @@ glide/
 
 | 键 | 类型 | 写入方 | 说明 |
 | --- | --- | --- | --- |
-| `site:<hostname>` | `{ on: boolean, src: string }` | content | 本网站手动选择的夜间状态。`src` 是写入标签页的随机 ID，用来忽略自己写入的回声。与自动规则一致时删除此键 |
-| `tune:<hostname>` | `{ brightness, never, dock?, dbl?, v: 2 }` | content | 按网站微调。`dock`/`dbl` 只在与全局默认不同时才存；全部为默认值时删除整个键 |
+| `site:<domain>` | `{ on: boolean, src: string }` | content | 本网站手动选择的夜间状态。`src` 是写入标签页的随机 ID，用来忽略自己写入的回声。与自动规则一致时删除此键 |
+| `tune:<domain>` | `{ brightness, never, dock?, dbl?, v: 2 }` | content | 按网站微调。`dock`/`dbl` 只在与全局默认不同时才存；全部为默认值时删除整个键 |
 | `autoMode` | `'system' \| 'schedule' \| 'off'` | popup | 自动夜间方式，缺省为 `off` |
 | `schedule` | `{ from: 'HH:MM', to: 'HH:MM' }` | popup | 定时区间，缺省 19:00–07:00 |
 | `palette` | `{ bg: '#rrggbb', text: 0.6–1 }` | popup | 夜间底色与文字亮度 |
@@ -51,11 +52,23 @@ glide/
 | `dockDefault` | `boolean` | popup | 胶囊全局默认，缺省 `true` |
 | `dblTop` | `boolean` | popup | 双击回顶全局默认，缺省 `true` |
 | `readerPrefs` | `{ fs, mw, ff, rate }` | reader | 阅读模式排版与语速 |
+| `domainKeys` | `true` | background | 已完成主域名迁移的标记 |
 | `followSystem` | `boolean` | 旧版 | 1.4.0 及以前的「跟随系统」开关；只读兼容：没有 `autoMode` 且此值为 `true` 时按 `system` 处理 |
 
 **兼容处理**：1.4.0 会把 `dock: true` 无条件写入 `tune:*`，那并非用户选择。`setTune()` 读到没有 `v: 2` 标记且 `dock === true` 的记录时会忽略该字段，新写入的记录都带 `v: 2`。
 
-网站键使用 `location.hostname`，没有主机名（如 `file:`）时用 `location.protocol`。
+网站键使用**主域名** `glideDomain(location.hostname)`（见 `domain.js`），没有主机名（如 `file:`）时用 `location.protocol`。
+
+`glideDomain` 不带完整的公共后缀列表，用小规则覆盖常见情况：
+
+- IP 地址、`localhost`、没有点的主机名：原样返回；
+- 两字母国家顶级域、且倒数第二段是 `com / net / org / gov / edu / ac / co / or / ne …`（如 `co.uk`、`com.cn`、`ac.jp`）：取最后三段；
+- 各人各站的托管平台（`github.io`、`vercel.app`、`netlify.app`、`pages.dev`、`blogspot.com` 等，见 `HOSTED`）：取最后三段；
+- 其他：取最后两段。
+
+需要支持新的托管平台时，把它加进 `domain.js` 的 `HOSTED`。
+
+**主域名迁移**：1.4.2 及以前按完整主机名存 `site:*` / `tune:*`。`background.js` 在 `runtime.onInstalled` 时把它们按主域名分组合并：优先用主域名本身的记录，其次 `www.`，再其次按名字排第一的；其余旧键删除。完成后写入 `domainKeys: true`，之后不再执行。
 
 ## 4. 消息协议
 
@@ -244,7 +257,7 @@ autoOn   = mode === 'system'   ? matchMedia('(prefers-color-scheme: dark)').matc
 2. 打包时只包含扩展所需文件和 README，不含 `docs/` 与 PRODUCT / TECHNICAL 文档；压缩包内是一个 `glide/` 文件夹：
 
    ```bash
-   git archive --prefix=glide/ -o glide-1.4.2.zip HEAD manifest.json background.js content.js reader.js popup.html popup.js _locales icons README.md README.zh-CN.md
+   git archive --prefix=glide/ -o glide-1.4.2.zip HEAD manifest.json domain.js background.js content.js reader.js popup.html popup.js _locales icons README.md README.zh-CN.md
    ```
 
 3. 打上 `vX.Y.Z` 标签，在 GitHub Releases 上传 zip；宣传页由 GitHub Pages 从 `docs/` 目录发布。

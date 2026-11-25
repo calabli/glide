@@ -30,6 +30,8 @@ Glide asks for one permission, `storage`, to remember your settings. It makes no
 > In Chrome, Settings → Appearance → Mode should stay on "Device".
 
 ## Settings panel (click the Glide icon in the toolbar)
+> A "site" means the main domain: github.com, www.github.com and docs.github.com share one set of settings.
+
 - **This site**: turn the pill and double-click to top on or off separately for each site. Hiding the pill keeps dark mode, shortcuts and reading mode working there
 - **All sites**: choose whether the pill and double-click to top are on by default. A site you set yourself keeps its own choice
 - Dark mode for this site, with one click to return it to auto
