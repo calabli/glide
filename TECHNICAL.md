@@ -1,6 +1,6 @@
 # Glide 技术文档
 
-> 版本 1.4.2 · Manifest V3 · 纯原生 JavaScript，无依赖、无构建步骤
+> 版本 1.5.0 · Manifest V3 · 纯原生 JavaScript，无依赖、无构建步骤
 > 产品功能说明见 [PRODUCT.md](PRODUCT.md)。
 
 ## 1. 目录结构
@@ -257,7 +257,7 @@ autoOn   = mode === 'system'   ? matchMedia('(prefers-color-scheme: dark)').matc
 2. 打包时只包含扩展所需文件和 README，不含 `docs/` 与 PRODUCT / TECHNICAL 文档；压缩包内是一个 `glide/` 文件夹：
 
    ```bash
-   git archive --prefix=glide/ -o glide-1.4.2.zip HEAD manifest.json domain.js background.js content.js reader.js popup.html popup.js _locales icons README.md README.zh-CN.md
+   git archive --prefix=glide/ -o glide-1.5.0.zip HEAD manifest.json domain.js background.js content.js reader.js popup.html popup.js _locales icons README.md README.zh-CN.md
    ```
 
 3. 打上 `vX.Y.Z` 标签，在 GitHub Releases 上传 zip；宣传页由 GitHub Pages 从 `docs/` 目录发布。
